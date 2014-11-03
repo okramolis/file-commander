@@ -1,0 +1,15 @@
+extends ../../common/layouts/layout.jade
+
+block content
+  table
+    tr
+      th Name
+      th Date modified
+      th Size
+      th Kind
+    each file in appkey.app.files.names
+      tr
+        td: a(href=appkey.req.url + file)= file
+        td: span= appkey.app.files.stats[file].mtime
+        td: span #{appkey.app.files.stats[file].size} bytes
+        td: span link: #{appkey.app.files.stats[file].isLink} directory: #{appkey.app.files.stats[file].isDir} file: #{appkey.app.files.stats[file].isFile}
