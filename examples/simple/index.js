@@ -32,6 +32,9 @@ const STATIC_PATH               = '/static'
       }
 ;
 
+// TODO make sure redis server is running
+//      - throw an error if it is not
+
 // get arguments passed by user
 var usrArgI = 2;
 const PORT = Number(process.argv[usrArgI++]) || DEFAULT_PORT;
@@ -39,6 +42,9 @@ const PORT = Number(process.argv[usrArgI++]) || DEFAULT_PORT;
 // get required modules
 var express = require('express')
   , bodyParser = require('body-parser')
+  , methodOverride = require('method-override')
+  , cookieParser = require('cookie-parser')
+  , expressSession = require('express-session')
   , logger = require('morgan')
   , path = require('path')
   , useragent = require('useragent')
@@ -47,6 +53,9 @@ var express = require('express')
 
 // get app
 var app = express();
+
+// create session store
+var RedisStore = require('connect-redis')(expressSession);
 
 // -------------------------------------------------------------------
 // APP CONFIGURATION
@@ -73,12 +82,23 @@ app.set('view engine', 'jade');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// HTTP POST method overriding
+app.use(methodOverride(overrideBodyMethod));
+
 // logging
 app.use(logger('dev'));
 
 // serving public files
 app.use(express.static(__dirname + STATIC_PATH, STATIC_SETTINGS));
 
+// session support
+app.use(cookieParser());
+app.use(expressSession({
+  store: new RedisStore(),
+  secret: 'tralala',
+  resave: true,
+  saveUninitialized: true
+}));
 // preprocess middleware
 app.use(reqInitMiddleware);
 
@@ -89,13 +109,21 @@ app.use(PLAIN_APP_URL_MOUNT, commander.serverBased({
 }));
 // process file commander result
 app.route(PLAIN_APP_ROUTE_EXP)
+.all(
+  validateCommanderMiddleware
+)
 .get(
-  validateCommanderMiddleware,
   userAgentInitMiddleware,
   resInitMiddleware,
   viewsInitMiddleware,
   getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'index.jade'),
   renderPlainAppMiddleware
+)
+.post(
+  redirBackMiddleware
+)
+.delete(
+  redirBackMiddleware
 );
 // not found middleware sub-stack
 app.route(PLAIN_APP_ROUTE_EXP)
@@ -144,6 +172,21 @@ function renderPlainAppMiddleware(req, res, next) {
   simpleRenderer(req, res, next);
 }
 
+// redirects back with message and status
+// - mainly used for serving POST method of request
+function redirBackMiddleware(req, res, next) {
+  var state = req.fcmder.state;
+  console.log(state);
+  if (!state || !state.code) {
+    next({
+      msg : 'Internal server error.',
+      desc: 'Invalid state format.'
+    });
+    return;
+  }
+  // TODO set session properties to let the client know message and other data
+  res.redirect('back');
+} // END of redirBackMiddleware
 
 // initializes request specific parameters
 // - shall be the first one from custom middleware chain
@@ -226,6 +269,17 @@ function notFoundRenderMiddleware(req, res, next) {
 }
 
 
+// -------------------------------------------------------------------
+// UTILITIES
+// -------------------------------------------------------------------
+function overrideBodyMethod(req, res){
+  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    // look in body and delete it
+    var method = req.body._method
+    delete req.body._method
+    return method
+  }
+}
 // -------------------------------------------------------------------
 // RESPONSE RENDERER DEFINITIONS
 // -------------------------------------------------------------------

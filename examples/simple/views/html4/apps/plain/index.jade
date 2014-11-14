@@ -1,6 +1,9 @@
 extends ../../common/layouts/layout.jade
 
 block content
+  form(action=appkey.req.url enctype="multipart/form-data" method="post")
+    input(type="file" name="upload" multiple="multiple")
+    input(type="submit" value="Upload")
   table
     tr
       th Name
