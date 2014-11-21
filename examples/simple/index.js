@@ -12,6 +12,12 @@ const STATIC_PATH               = '/static'
   ,   PLAIN_APP_ROUTE_EXP       = new RegExp('^' + PLAIN_APP_URL_MOUNT)
   ,   PLAIN_APP_VIEWS_MOUNT     = 'apps/plain/'
   ,   MAIN_APP_VIEWS_MOUNT      = 'apps/main/'
+  ,   USER_VIEWS_MOUNT          = 'common/user/'
+  ,   LOGIN_ROUTE               = '/login'
+  ,   LOGOUT_ROUTE              = '/logout'
+  ,   HOME_ROUTE                = '/home'
+  ,   LOGOUT_REDIR_ROUTE        = LOGIN_ROUTE
+  ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
   ,   HTML5_SUPPORT             = {
         "IE"                : {major: 11, minor: 0}
@@ -32,13 +38,6 @@ const STATIC_PATH               = '/static'
       }
 ;
 
-// TODO make sure redis server is running
-//      - throw an error if it is not
-
-// get arguments passed by user
-var usrArgI = 2;
-const PORT = Number(process.argv[usrArgI++]) || DEFAULT_PORT;
-
 // get required modules
 var express = require('express')
   , bodyParser = require('body-parser')
@@ -48,14 +47,53 @@ var express = require('express')
   , logger = require('morgan')
   , path = require('path')
   , useragent = require('useragent')
+  , config = require('config')
+  , _ = require('underscore')
   , commander = require('../..')
 ;
+
+// get configurations
+var appConfig = config.get('app')
+  , dbConfig  = config.get('db')
+;
+
+var dbio = require('./lib/dbio/' + dbConfig.type)
+  , authmod = require('./lib/auth')
+;
+
+// initialize constants
+const PORT = appConfig.net.port;
 
 // get app
 var app = express();
 
+// TODO make sure redis server is running
+//      - throw an error if it is not
+
 // create session store
 var RedisStore = require('connect-redis')(expressSession);
+
+// create connection to a database specified in the app configuration
+var db = new dbio.Connection(dbConfig.settings);
+// create authentication manager
+var auth = authmod.configure({
+  db: db,
+  model: USER_MODEL_NAME
+});
+// create authentication strategies
+var strategies = {}
+  , stratConfig = appConfig.auth.strategies
+;
+for (var strategy in stratConfig) {
+  var Auth = require('./lib/auth/' + strategy).Auth;
+  strategies[strategy] = new Auth(
+    _.extend({
+      manager : auth,
+      db      : db,
+      model   : USER_MODEL_NAME
+    }, stratConfig[strategy])
+  );
+}
 
 // -------------------------------------------------------------------
 // APP CONFIGURATION
@@ -95,12 +133,46 @@ app.use(express.static(__dirname + STATIC_PATH, STATIC_SETTINGS));
 app.use(cookieParser());
 app.use(expressSession({
   store: new RedisStore(),
-  secret: 'tralala',
+  secret: 'tralala nana',
   resave: true,
   saveUninitialized: true
 }));
+// authentication support
+app.use(auth.initialize());
+app.use(auth.session());
+
 // preprocess middleware
 app.use(reqInitMiddleware);
+
+// application login page
+app.get(
+  LOGIN_ROUTE,
+  ensureUnauthenticated,
+  userAgentInitMiddleware,
+  resInitMiddleware,
+  viewsInitMiddleware,
+  getViewMiddleware(USER_VIEWS_MOUNT + 'login.jade'),
+  renderLoginMiddleware
+);
+
+// application logout handler
+app.get(LOGOUT_ROUTE, redirLogoutMiddleware);
+
+// application user home page
+app.get(
+  HOME_ROUTE,
+  ensureAuthenticated,
+  userAgentInitMiddleware,
+  resInitMiddleware,
+  viewsInitMiddleware,
+  getViewMiddleware(USER_VIEWS_MOUNT + 'account.jade'),
+  renderHomeMiddleware
+);
+
+// authentication routers
+for (var key in strategies) {
+  app.use(strategies[key].router());
+}
 
 // use file commander - PLAIN APP
 app.use(PLAIN_APP_URL_MOUNT, commander.serverBased({
@@ -159,6 +231,35 @@ app.route(COMMANDER_ROUTE_EXP)
 // CUSTOM MIDDLEWARE DEFINITIONS
 // -------------------------------------------------------------------
 
+// renders user home page
+function renderHomeMiddleware(req, res, next) {
+  res.locals.appkey.user = {
+    username    : req.user.username,
+    displayName : req.user.displayName
+  };
+  simpleRenderer(req, res, next);
+} // END of renderHomeMiddleware
+
+// renders app login page
+function renderLoginMiddleware(req, res, next) {
+  // optional success redirection after login
+  res.locals.appkey.redir = req.query.redir;
+  // parameters for authentication strategies
+  res.locals.appkey.auth = { // TODO prebuild this object according to auth configuration
+    local: {
+      // TODO add parameters for local.jade view
+      fields: {
+        username: 'username',
+        password: 'password'
+      }
+    },
+    links: [
+      // TODO add auth strategies with their parameters for link.jade view
+    ]
+  };
+  simpleRenderer(req, res, next);
+} // END of renderLoginMiddleware
+
 // renders main app response
 function renderMainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path = req.fcmder.fs.path.name;
@@ -170,6 +271,11 @@ function renderPlainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path  = req.fcmder.fs.path.name;
   res.locals.appkey.app.files = req.fcmder.fs.files;
   simpleRenderer(req, res, next);
+}
+
+function redirLogoutMiddleware(req, res){
+  req.logout();
+  res.redirect(LOGOUT_REDIR_ROUTE);
 }
 
 // redirects back with message and status
@@ -187,6 +293,22 @@ function redirBackMiddleware(req, res, next) {
   // TODO set session properties to let the client know message and other data
   res.redirect('back');
 } // END of redirBackMiddleware
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    next();
+    return;
+  }
+  res.redirect(LOGIN_ROUTE);
+} // END of ensureAuthenticated
+
+function ensureUnauthenticated(req, res, next) {
+  if (!req.isAuthenticated()) {
+    next();
+    return;
+  }
+  res.redirect(HOME_ROUTE);
+} // END of ensureUnauthenticated
 
 // initializes request specific parameters
 // - shall be the first one from custom middleware chain
@@ -268,7 +390,6 @@ function notFoundRenderMiddleware(req, res, next) {
   res.send('Sorry, we cannot find that!!!!');
 }
 
-
 // -------------------------------------------------------------------
 // UTILITIES
 // -------------------------------------------------------------------
@@ -280,6 +401,21 @@ function overrideBodyMethod(req, res){
     return method
   }
 }
+
+function gracefulExit() {
+  // TODO what about redis?
+
+  db.disconnect(function () {
+    console.log(
+      '\nConnection with ' +
+      'db: "' + dbConfig.settings.name + '" ' +
+      'disconnected via app termination.'
+    );
+    process.exit(0);
+  });
+} // END of gracefulExit
+
+
 // -------------------------------------------------------------------
 // RESPONSE RENDERER DEFINITIONS
 // -------------------------------------------------------------------
@@ -295,6 +431,13 @@ function simpleRenderer(req, res, next, locals, cb) {
 // APP START
 // -------------------------------------------------------------------
 
-// start listening on defined port
-app.listen(PORT);
-console.log('listening on port ' + PORT);
+// ensure graceful exit of the process when signal received
+process.on('SIGINT', gracefulExit).on('SIGTERM', gracefulExit);
+
+// start listening on defined port when the connection to the database is open
+db.on('open', function() {
+  console.log('connection with database "%s" open ...', dbConfig.settings.name);
+  app.listen(PORT);
+  console.log('listening on port ' + PORT);
+});
+db.connect();

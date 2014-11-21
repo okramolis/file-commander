@@ -1,0 +1,31 @@
+{
+  "db": {
+    "settings": {
+      "name": "file_commander",
+      "defaultContent": [{
+        "collection": "users",
+        "content": {
+          "username": "test",
+          "password": "test"
+        }
+      }]
+    },
+    "type": "local"
+  },
+  "app": {
+    "net": {
+      "port": 8888
+    },
+    "auth": {
+      "strategies": {
+        "local": {
+          "postRoute": "/login",
+          "settings": {
+            "successRedirect": "/home",
+            "failureRedirect": "/login"
+          }
+        }
+      }
+    }
+  }
+}
