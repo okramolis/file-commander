@@ -2,6 +2,9 @@ extends ../layouts/layout.jade
 
 block content
   p Home again. I am #{appkey.user.displayName || appkey.user.username}!
+  p Here are 
+    a(href="/files") my files
+    | .
   p I can go away via this link: 
     a(href="/logout") Logout
     | .

@@ -1,6 +1,7 @@
 const STATIC_PATH               = '/static'
-  ,   COMMANDER_URL_MOUNT       = '/commander'
-  ,   COMMANDER_ROUTE_EXP       = new RegExp('^' + COMMANDER_URL_MOUNT)
+  ,   PRIVATE_PATH              = '/homes'
+  ,   PUBLIC_APP_URL_MOUNT      = '/commander'
+  ,   PRIVATE_APP_URL_MOUNT     = '/files'
   ,   DEFAULT_PORT              = 8888
   ,   STATIC_SETTINGS           = {
         dotfiles: 'allow'
@@ -8,8 +9,7 @@ const STATIC_PATH               = '/static'
   ,   VIEWS_PATH                = '/views'
   ,   HTML5_VIEWS_MOUNT         = 'html5/'
   ,   HTML4_VIEWS_MOUNT         = 'html4/'
-  ,   PLAIN_APP_URL_MOUNT       = COMMANDER_URL_MOUNT + '/plain-app'
-  ,   PLAIN_APP_ROUTE_EXP       = new RegExp('^' + PLAIN_APP_URL_MOUNT)
+  ,   PLAIN_APP_URL_MOUNT       = '/plain-app'
   ,   PLAIN_APP_VIEWS_MOUNT     = 'apps/plain/'
   ,   MAIN_APP_VIEWS_MOUNT      = 'apps/main/'
   ,   USER_VIEWS_MOUNT          = 'common/user/'
@@ -36,6 +36,10 @@ const STATIC_PATH               = '/static'
       , "IE Mobile"         : {major: 10, minor: 0}
       , "UC Browser"        : {major: 9 , minor: 9}
       }
+  ,   PUBLIC_APP_ROUTE_EXP        = new RegExp('^' + PUBLIC_APP_URL_MOUNT)
+  ,   PRIVATE_APP_ROUTE_EXP       = new RegExp('^' + PRIVATE_APP_URL_MOUNT)
+  ,   PUBLIC_PLAIN_APP_ROUTE_EXP  = new RegExp('^' + PUBLIC_APP_URL_MOUNT + PLAIN_APP_URL_MOUNT)
+  ,   PRIVATE_PLAIN_APP_ROUTE_EXP = new RegExp('^' + PRIVATE_APP_URL_MOUNT + PLAIN_APP_URL_MOUNT)
 ;
 
 // get required modules
@@ -46,10 +50,11 @@ var express = require('express')
   , expressSession = require('express-session')
   , logger = require('morgan')
   , path = require('path')
+  , fs = require('fs')
   , useragent = require('useragent')
   , config = require('config')
   , _ = require('underscore')
-  , commander = require('../..')
+  , Commander = require('../..').Commander
 ;
 
 // get configurations
@@ -65,7 +70,20 @@ var dbio = require('./lib/dbio/' + dbConfig.type)
 const PORT = appConfig.net.port;
 
 // get app
+// ... express app
 var app = express();
+// ... file commander app - public - read-only settings
+var publicApp = new Commander({
+  publicFiles : __dirname + STATIC_PATH,
+  dotfiles    : STATIC_SETTINGS.dotfiles,
+  mount       : PUBLIC_APP_URL_MOUNT
+});
+// ... file commander app - private - read/write settings
+var privateApp = new Commander({
+  authorize   : authorizeOwnerMiddleware,
+  dotfiles    : STATIC_SETTINGS.dotfiles,
+  mount       : PRIVATE_APP_URL_MOUNT
+});
 
 // TODO make sure redis server is running
 //      - throw an error if it is not
@@ -104,8 +122,9 @@ for (var strategy in stratConfig) {
 app.locals = {
   CONSTS: {
     COMMANDER: {
-      URL_MOUNT           : COMMANDER_URL_MOUNT,
-      PLAIN_APP_URL_MOUNT : PLAIN_APP_URL_MOUNT
+      PUBLIC_APP_URL_MOUNT  : PUBLIC_APP_URL_MOUNT,
+      PRIVATE_APP_URL_MOUNT : PRIVATE_APP_URL_MOUNT,
+      PLAIN_APP_URL_MOUNT   : PLAIN_APP_URL_MOUNT
     }
   }
 };
@@ -174,13 +193,12 @@ for (var key in strategies) {
   app.use(strategies[key].router());
 }
 
-// use file commander - PLAIN APP
-app.use(PLAIN_APP_URL_MOUNT, commander.serverBased({
-  publicFiles : __dirname + STATIC_PATH,
-  dotfiles    : STATIC_SETTINGS.dotfiles
-}));
+// --------------------------------------
+// use file commander - private PLAIN APP
+// --------------------------------------
+app.use(PRIVATE_APP_URL_MOUNT + PLAIN_APP_URL_MOUNT, privateApp.serverBased());
 // process file commander result
-app.route(PLAIN_APP_ROUTE_EXP)
+app.route(PRIVATE_PLAIN_APP_ROUTE_EXP)
 .all(
   validateCommanderMiddleware
 )
@@ -188,7 +206,7 @@ app.route(PLAIN_APP_ROUTE_EXP)
   userAgentInitMiddleware,
   resInitMiddleware,
   viewsInitMiddleware,
-  getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'index.jade'),
+  getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'private.jade'),
   renderPlainAppMiddleware
 )
 .post(
@@ -198,20 +216,60 @@ app.route(PLAIN_APP_ROUTE_EXP)
   redirBackMiddleware
 );
 // not found middleware sub-stack
-app.route(PLAIN_APP_ROUTE_EXP)
+app.route(PRIVATE_PLAIN_APP_ROUTE_EXP)
 .all(
   notFoundCommonMiddleware,
   notFoundRenderMiddleware
 );
 
-// use file commander - MAIN APP
-app.use(COMMANDER_URL_MOUNT, commander.restBased({
-  publicFiles : __dirname + STATIC_PATH,
-  dotfiles    : STATIC_SETTINGS.dotfiles,
-  mount       : COMMANDER_URL_MOUNT
-}));
+// --------------------------------------
+// use file commander - public PLAIN APP
+// --------------------------------------
+app.use(PUBLIC_APP_URL_MOUNT + PLAIN_APP_URL_MOUNT, publicApp.serverBased());
 // process file commander result
-app.route(COMMANDER_ROUTE_EXP)
+app.route(PUBLIC_PLAIN_APP_ROUTE_EXP)
+.get(
+  validateCommanderMiddleware,
+  userAgentInitMiddleware,
+  resInitMiddleware,
+  viewsInitMiddleware,
+  getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'index.jade'),
+  renderPlainAppMiddleware
+);
+// not found middleware sub-stack
+app.route(PUBLIC_PLAIN_APP_ROUTE_EXP)
+.all(
+  notFoundCommonMiddleware,
+  notFoundRenderMiddleware
+);
+
+// --------------------------------------
+// use file commander - private MAIN APP
+// --------------------------------------
+app.use(PRIVATE_APP_URL_MOUNT, privateApp.restBased());
+// process file commander result
+app.route(PRIVATE_APP_ROUTE_EXP)
+.get(
+  validateCommanderMiddleware,
+  userAgentInitMiddleware,
+  resInitMiddleware,
+  viewsInitMiddleware,
+  getViewMiddleware(MAIN_APP_VIEWS_MOUNT + 'private.jade'),
+  renderMainAppMiddleware
+);
+// not found middleware sub-stack
+app.route(PRIVATE_APP_ROUTE_EXP)
+.all(
+  notFoundCommonMiddleware,
+  notFoundRenderMiddleware
+);
+
+// --------------------------------------
+// use file commander - public MAIN APP
+// --------------------------------------
+app.use(PUBLIC_APP_URL_MOUNT, publicApp.restBased());
+// process file commander result
+app.route(PUBLIC_APP_ROUTE_EXP)
 .get(
   validateCommanderMiddleware,
   userAgentInitMiddleware,
@@ -221,7 +279,7 @@ app.route(COMMANDER_ROUTE_EXP)
   renderMainAppMiddleware
 );
 // not found middleware sub-stack
-app.route(COMMANDER_ROUTE_EXP)
+app.route(PUBLIC_APP_ROUTE_EXP)
 .all(
   notFoundCommonMiddleware,
   notFoundRenderMiddleware
@@ -299,6 +357,7 @@ function ensureAuthenticated(req, res, next) {
     next();
     return;
   }
+  // TODO provide query set to redir=req.url
   res.redirect(LOGIN_ROUTE);
 } // END of ensureAuthenticated
 
@@ -310,11 +369,53 @@ function ensureUnauthenticated(req, res, next) {
   res.redirect(HOME_ROUTE);
 } // END of ensureUnauthenticated
 
+// supplies absolute path to user's private files (his home directory)
+// to next midleware
+function authorizeOwnerMiddleware(req, res, next) {
+  if (!req.isAuthenticated()) {
+    // TODO provide query set to redir=req.url
+    res.redirect(LOGIN_ROUTE);
+    return;
+  }
+  // user authenticated
+  // get user home directory
+  var mount = __dirname + PRIVATE_PATH + '/' + req.user._id;
+  // check existence of the directory
+  fs.exists(mount, function(exists) {
+    if (exists) {
+      // the directory exists
+      // ... set user home directory
+      Commander.setRequestUserHome(req, mount);
+      // ... proceed with next middleware
+      next();
+      return;
+    }
+    // the directory does not exist, create it
+    console.log('Creating home directory for user: "%s".', req.user._id);
+    fs.mkdir(mount, function(err) {
+      debugger;
+      if (err) {
+        // unexpected error occurred
+        // TODO format the error
+        next(err);
+        return;
+      }
+      // the directory successfully created
+      console.log('Home directory created for user: "%s".', req.user._id);
+      // ... set user home directory
+      Commander.setRequestUserHome(req, mount);
+      // ... finally proceed with next middleware
+      next();
+    });
+  });
+} // END of authorizeOwnerMiddleware
+
 // initializes request specific parameters
 // - shall be the first one from custom middleware chain
 function reqInitMiddleware(req, res, next) {
   req.appkey = {
     req: {
+      path: decodeURIComponent(req.path),
       url: decodeURIComponent(req.url)
     }
   };
@@ -328,6 +429,7 @@ function resInitMiddleware(req, res, next) {
       body: {},
       app : {},
       req : {
+        path  : req.appkey.req.path,
         url   : req.appkey.req.url
       }
     }

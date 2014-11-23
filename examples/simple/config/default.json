@@ -5,8 +5,17 @@
       "defaultContent": [{
         "collection": "users",
         "content": {
+          "_id": "__27138414583168924",
           "username": "test",
           "password": "test"
+        }
+      },{
+        "collection": "users",
+        "content": {
+          "_id": "__37138414583168924",
+          "username": "user",
+          "password": "user",
+          "displayName": "User"
         }
       }]
     },

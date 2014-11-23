@@ -1,9 +1,6 @@
 extends ../../common/layouts/layout.jade
 
 block content
-  form(action=appkey.req.url enctype="multipart/form-data" method="post")
-    input(type="file" name="upload" multiple="multiple")
-    input(type="submit" value="Upload")
   table
     tr
       th Name
@@ -12,7 +9,7 @@ block content
       th Kind
     each file in appkey.app.files.names
       tr
-        td: a(href=appkey.req.url + file)= file
+        td: a(href=appkey.req.path + file)= file
         td: span= appkey.app.files.stats[file].mtime
         td: span #{appkey.app.files.stats[file].size} bytes
         td: span link: #{appkey.app.files.stats[file].isLink} directory: #{appkey.app.files.stats[file].isDir} file: #{appkey.app.files.stats[file].isFile}
