@@ -328,6 +328,7 @@ function renderMainAppMiddleware(req, res, next) {
 function renderPlainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path  = req.fcmder.fs.path.name;
   res.locals.appkey.app.files = req.fcmder.fs.files;
+  res.locals.appkey.app.parentPath = path.dirname(req.fcmder.fs.path.name);
   simpleRenderer(req, res, next);
 }
 
