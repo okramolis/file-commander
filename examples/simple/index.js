@@ -17,6 +17,7 @@ const STATIC_PATH               = '/static'
   ,   LOGOUT_ROUTE              = '/logout'
   ,   HOME_ROUTE                = '/home'
   ,   LOGOUT_REDIR_ROUTE        = LOGIN_ROUTE
+  ,   FCMDER_NG_APP_NAME        = 'fcmderApp'
   ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
   ,   HTML5_SUPPORT             = {
@@ -427,6 +428,9 @@ function reqInitMiddleware(req, res, next) {
 function resInitMiddleware(req, res, next) {
   res.locals = {
     appkey: {
+      root: {
+        attrs: {"ng-app": FCMDER_NG_APP_NAME}
+      },
       body: {},
       app : {},
       req : {

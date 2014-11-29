@@ -1,0 +1,47 @@
+<div class="container">
+  <div>
+    Search: <input ng-model="query.name" placeholder="file name">
+  </div>
+  <div class="row">
+    <table class="cdir-list table-style">
+      <tbody>
+        <tr>
+          <th ng-click="onOrderClick('name')" class="col-md-6">
+                Name <small>{{orderMarker.name | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('mtime')" class="col-md-2">
+                Date modified <small>{{orderMarker.mtime | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('size')" class="col-md-2">
+                Size <small>{{orderMarker.size | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('kind')" class="col-md-2">
+                Kind <small>{{orderMarker.kind | marker}}</small>
+          </th>
+        </tr>
+        <tr>
+          <td class="col-md-6">
+            <a href="{{'#' + parentDir.path}}">{{parentDir.name}}</a>
+          </td>
+          <td class="col-md-2"></td>
+          <td class="col-md-2"></td>
+          <td class="col-md-2"></td>
+        </tr>
+        <tr ng-repeat="item in items | filter:query | orderBy:orderProp">
+          <td class="col-md-6">
+            <a href="{{'#' + item.path}}">{{item.name}}</a>
+          </td>
+          <td class="col-md-2">
+            <span>{{item | mtime}}</span>
+          </td>
+          <td class="col-md-2">
+            <span>{{item | size}}</span>
+          </td>
+          <td class="col-md-2">
+            <span>{{item.kind}}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
