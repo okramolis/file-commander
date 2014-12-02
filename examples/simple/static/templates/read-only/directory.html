@@ -3,7 +3,7 @@
     Search: <input ng-model="query.name" placeholder="file name">
   </div>
   <div class="row">
-    <table class="cdir-list table-style">
+    <table class="fcmder_files-table table-style">
       <tbody>
         <tr>
           <th ng-click="onOrderClick('name')" class="col-md-6">
@@ -21,7 +21,7 @@
         </tr>
         <tr>
           <td class="col-md-6">
-            <a href="{{'#' + parentDir.path}}">{{parentDir.name}}</a>
+            <a href="{{'#' + (parentDir | url)}}">{{parentDir.name}}</a>
           </td>
           <td class="col-md-2"></td>
           <td class="col-md-2"></td>
@@ -29,7 +29,7 @@
         </tr>
         <tr ng-repeat="item in items | filter:query | orderBy:orderProp">
           <td class="col-md-6">
-            <a href="{{'#' + item.path}}">{{item.name}}</a>
+            <a href="{{'#' + (item | url)}}">{{item.name}}</a>
           </td>
           <td class="col-md-2">
             <span>{{item | mtime}}</span>

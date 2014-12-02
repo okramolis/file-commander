@@ -30,6 +30,12 @@ angular.module('fcmderListFormatters', [])
     return (Math.round(item.size / 10000000) / 100) + ' GB';
   };
 })
+.filter('url', function() {
+  return function(item) {
+    if (!item) { return; }
+    return fcmderUtils.path.join(item.mount, item.path);
+  }
+})
 .filter('mtime', function() {
   return function(item) {
     if (!item || !(item.mtime instanceof Date)) { return '--'; }

@@ -351,6 +351,7 @@ function redirBackMiddleware(req, res, next) {
     return;
   }
   // TODO set session properties to let the client know message and other data
+  // TODO set res.status according state.code
   res.redirect('back');
 } // END of redirBackMiddleware
 

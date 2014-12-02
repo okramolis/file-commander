@@ -13,15 +13,15 @@ block content
     li
       div Create a new folder in current folder
       form(action=appkey.req.path method="post")
-        input(id="input-newdir-name" type="text" name="name" placeholder="Folder name")
+        input(type="text" name="name" placeholder="Folder name")
         button(type="submit") Create
     li
       div Copy or move selected elements to current folder
       form(action=appkey.req.path method="post")
-        input(id="input-source-path" type="text" name="local" placeholder="Source path" required)
-        input(id="input-dest-name" type="text" name="name" placeholder="New name")
+        input(type="text" name="local" placeholder="Source path" required)
+        input(type="text" name="name" placeholder="New name")
         button(type="submit") Move
-        button(type="submit" name="preserve") Copy
+        button(type="submit" name="preserve" value="preserve") Copy
   table.fcmder_files-table
     tr
       th Name

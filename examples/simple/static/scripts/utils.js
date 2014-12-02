@@ -20,14 +20,11 @@ var fcmderUtils = {
       }
       return '/' + kind;
     },
-    routeParams2url: function(params) {
+    path2url: function(path) {
       // TODO read mount via other way - move 'rest-api/' definition outside of js
       var url = fcmderUtils.path.join(location.pathname, 'rest-api/');
-      if (typeof params.pathname === 'string') {
-        url = fcmderUtils.path.join(url, params.pathname);
-      }
-      if (typeof params.itemname === 'string') {
-        url = fcmderUtils.path.join(url, params.itemname);
+      if (typeof path === 'string') {
+        url = fcmderUtils.path.join(url, path);
       }
       url = fcmderUtils.path.removeTrailingSlash(url);
       return (!url || typeof url !== 'string') ? null : url;
