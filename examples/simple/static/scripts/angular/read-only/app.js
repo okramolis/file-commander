@@ -4,6 +4,7 @@
 
 var fcmderApp = angular.module('fcmderApp', [
   'ngRoute',
+  'ui.bootstrap',
   'fcmderControllers',
   'fcmderListOrderFilters',
   'fcmderListFormatters'

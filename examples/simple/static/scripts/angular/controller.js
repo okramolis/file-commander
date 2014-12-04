@@ -95,9 +95,17 @@ fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'file
       .success(function(res){
         if (res.status === 201) {
           // New data created.
+          // At least one file created.
+
+          // Check right response format - location is mandatory.
           if (!res.location) {
+            console.error('Invalid server response format.\n' + JSON.stringify(res));
             return;
           }
+
+          // Inform user about accepted/rejected files.
+          $scope.$emit('alert', res.message, 'success');
+
           var uploaded;
           if (Array.isArray(res.location)) {
             uploaded = res.location;
@@ -113,16 +121,22 @@ fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'file
             $http.get(uploaded[i])
             .success(function(created) {
               $scope.items.push(new Item(created.name, created.meta, created.path));
-            // TODO add error handler
+            })
+            .error(function(res) {
+              console.error('file-commander: http error ...\n' + JSON.stringify(res));
+              // TODO display error message
+              // - page could not be refreshed, please refresh the page manually
             });
           }
           return;
         }
+        if (res.status === 200) {
+          // OK but nothing was created - nothing uploaded or everything rejected.
+          $scope.$emit('alert', res.message);
+          return;
+        }
       })
-      .error(function(){
-        // TODO implement proper error handler
-        console.warn('error while uploading file(s)');
-      });
+      .error($scope.handleErrHttp);
     }
   }
 ]);
@@ -142,14 +156,16 @@ fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
         console.warn('file-commander: current directory has not been initialized yet.');
         return;
       }
-      // TODO handle $http error states
       // Send post request and handle server response.
       $http.post(fcmderUtils.app.path2url($scope.currentDir.path), $scope.form.attrs)
       .success(function(res) {
         // Try to fetch up-to-date version of posted data.
         if (res.status === 200) {
           // Existing data modified.
+
+          // Check right response format - location is mandatory.
           if (!res.location) {
+            console.error('Invalid server response format.\n' + JSON.stringify(res));
             return;
           }
           if (!$scope.item) {
@@ -160,6 +176,10 @@ fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
                          $scope.form.attrs.name);
             return;
           }
+
+          // Inform the user.
+          $scope.$emit('alert', res.message, 'success');
+
           // Fetch the updated item specified by "location" response property to update self.
           $http.get(res.location)
           .success(function(updated) {
@@ -172,22 +192,40 @@ fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
             if ($scope.form.attrs.hasOwnProperty('local')) {
               $scope.form.attrs.local = $scope.item.path;
             }
+          })
+          .error(function(res) {
+            console.error('file-commander: http error ...\n' + JSON.stringify(res));
+            // TODO display error message
+            // - page could not be refreshed, please refresh the page manually
           });
           return;
         }
         if (res.status === 201) {
           // New data created.
+
+          // Check right response format - location is mandatory.
           if (!res.location) {
+            console.error('Invalid server response format.\n' + JSON.stringify(res));
             return;
           }
+
+          // Inform the user.
+          $scope.$emit('alert', res.message, 'success');
+
           // Fetch the created item specified by "location" response property to update self.
           $http.get(res.location)
           .success(function(created) {
             $scope.items.push(new Item(created.name, created.meta, created.path));
+          })
+          .error(function(res) {
+            console.error('file-commander: http error ...\n' + JSON.stringify(res));
+            // TODO display error message
+            // - page could not be refreshed, please refresh the page manually
           });
           return;
         }
-      });
+      })
+      .error($scope.handleErrHttp);
     }
   }
 ]);
@@ -207,6 +245,8 @@ fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
       // send form and handle server response
       $http.post(fcmderUtils.app.path2url($scope.item.path), $scope.form.attrs)
       .success(function(res) {
+        // Inform the user.
+        $scope.$emit('alert', res.message, 'success');
         // find current item in the collection
         var i = $scope.items.indexOf($scope.item);
         if (i < 0 || i >= $scope.items.length) {
@@ -217,7 +257,48 @@ fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
         // remove current item from the collection
         $scope.items.splice(i, 1);
         $scope.item = null;
-      });
+      })
+      .error($scope.handleErrHttp);
+    }
+  }
+]);
+
+// --------------------------------------
+// Shared controller
+// --------------------------------------
+// Root controller for specific template.
+// Provided functionality:
+// - handling alerts
+//   - display
+//   - close
+// - handling http errors
+fcmderControllers.controller('TemplateCtrl', ['$scope',
+  function ($scope) {
+    $scope.alerts = [];
+
+    $scope.$on('alert', function(e, msg, type) {
+      if (typeof msg !== 'string') {
+        // Default messages.
+        switch (type) {
+          case 'success':
+            msg = 'Success ...'
+            break;
+          case 'danger':
+            msg = 'Unknown error occurred ...'
+            break;
+          default:
+            msg = 'Warning ...'
+        }
+      }
+      $scope.alerts.push({msg: msg, type: type});
+    });
+
+    $scope.closeAlert = function(index) {
+      $scope.alerts.splice(index, 1);
+    }
+
+    $scope.handleErrHttp = function(res) {
+      $scope.$emit('alert', res.message, 'danger');
     }
   }
 ]);

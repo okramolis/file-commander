@@ -1,2 +1,10 @@
-<p>This is preview of a symbolic link: {{link.name}}.</p>
-<p>It points to a file: <a href="#{{orig.path}}">{{orig.name}}</a>.</p>
+<div class="container" ng-controller="TemplateCtrl">
+
+  <div>
+    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+
+  <p>This is preview of a symbolic link: {{link.name}}.</p>
+  <p>It points to a file: <a href="#{{orig.path}}">{{orig.name}}</a>.</p>
+
+</div>
