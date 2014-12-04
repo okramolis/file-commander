@@ -27,9 +27,106 @@ fcmderControllers.factory('Item', function() {
   return Item;
 });
 
+//-----------------------------
+// Upload service
+//-----------------------------
+// Basic multipart/form-data encoding abstraction.
+fcmderControllers.service('fileUpload', ['$http',
+  function ($http) {
+    this.uploadFileToUrl = function(files, uploadUrl){
+      var fd = new FormData();
+      for (var i = 0, len = files.length; i < len; i++) {
+        fd.append('file', files[i]);
+      }
+      return $http.post(uploadUrl, fd, {
+        transformRequest: angular.identity,
+        headers: {'Content-Type': undefined}
+      });
+    }
+  }
+]);
+
+// Passes files from element to scope.
+// Supposed to be used on input[type="file"] element.
+fcmderControllers.directive('fileModel', ['$parse',
+  function ($parse) {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attrs) {
+        var model = $parse(attrs.fileModel);
+        var modelSetter = model.assign;
+
+        element.bind('change', function(){
+          scope.$apply(function(){
+            modelSetter(scope, element[0].files);
+          });
+        });
+      }
+    };
+  }
+]);
+
+// Event listener
+// - submit => clear the input file element
+fcmderControllers.directive('fileUploadFormWatch', [
+  function () {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attrs) {
+        element.bind('submit', function(){
+          // TODO make this more robust - find input[type="file"] element
+          this[0].value = null;
+        });
+      }
+    };
+  }
+]);
+
 //------------------------
 // Submitted form handlers
 //------------------------
+fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'fileUpload',
+  function($scope, $http, Item, fileUpload){
+    $scope.onSubmit = function(){
+      var files = $scope.files2upload;
+      if (!files) { return; }
+      var uploadUrl = fcmderUtils.path.join('rest-api', $scope.currentDir.path);
+      fileUpload.uploadFileToUrl(files, uploadUrl)
+      .success(function(res){
+        if (res.status === 201) {
+          // New data created.
+          if (!res.location) {
+            return;
+          }
+          var uploaded;
+          if (Array.isArray(res.location)) {
+            uploaded = res.location;
+          } else if (typeof res.location === 'string') {
+            uploaded = [res.location];
+          }
+          if (!Array.isArray(uploaded)) {
+            console.log('file-commander: invalid location header "' + res.location + '"');
+            return;
+          }
+          // Fetch the created item specified by "location" response property to update self.
+          for(var i = 0, len = uploaded.length; i < len; i++) {
+            $http.get(uploaded[i])
+            .success(function(created) {
+              $scope.items.push(new Item(created.name, created.meta, created.path));
+            // TODO add error handler
+            });
+          }
+          return;
+        }
+      })
+      .error(function(){
+        // TODO implement proper error handler
+        console.warn('error while uploading file(s)');
+      });
+    }
+  }
+]);
+
 fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
   // Controller is supposed to be called for submitted forms only (this is app's responsibility).
   function($scope, $http, Item) {

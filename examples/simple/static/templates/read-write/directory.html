@@ -3,8 +3,8 @@
   <ul class="fcmder_cdir_commands">
     <li>
       <div>Upload files to current folder</div>
-      <form action="{{'rest-api' + currentDir.path}}" enctype="multipart/form-data" method="post">
-        <input type="file" name="upload" multiple="multiple" />
+      <form ng-controller="FileUploadCtrl" ng-submit="onSubmit()" file-upload-form-watch>
+        <input type="file" name="upload" multiple="multiple" file-model="files2upload"/>
         <button type="submit">Upload</button>
       </form>
     </li>
