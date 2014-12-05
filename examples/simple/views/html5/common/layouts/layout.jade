@@ -1,7 +1,9 @@
 doctype html
-html
+html&attributes(appkey.root.attrs)
   head
+    meta(charset="utf-8")
     block styles
+      link(rel="stylesheet" type="text/css" href="/styles/common.css")
+    block scripts
   body(class=appkey.body.classes)
     block content
-    block scripts

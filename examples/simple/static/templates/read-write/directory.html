@@ -1,0 +1,103 @@
+<div class="container" ng-controller="TemplateCtrl">
+
+  <div>
+    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">
+      {{alert.msg}}
+    </alert>
+  </div>
+
+  <ul class="fcmder_cdir-commands">
+    <li>
+      <div>Upload files to current folder</div>
+      <form ng-controller="FileUploadCtrl" ng-submit="onSubmit()" file-upload-form-watch>
+        <input type="file" name="upload" multiple="multiple" file-model="files2upload"/>
+        <button type="submit">Upload</button>
+      </form>
+    </li>
+    <li>
+      <div>Create a new folder in current folder</div>
+      <form ng-controller="FormPostCtrl" ng-submit="onSubmit()">
+        <input type="text" placeholder="Folder name" ng-model="form.attrs.name" />
+        <button type="submit">Create</button>
+      </form>
+    </li>
+    <li>
+      <div>Copy or move selected elements to current folder</div>
+      <form ng-controller="FormPostCtrl" ng-submit="onSubmit()">
+        <input type="text" placeholder="Source path" ng-model="form.attrs.local" required />
+        <input type="text" placeholder="New name" ng-model="form.attrs.name" />
+        <button type="submit" ng-click="form.attrs.preserve=null">Move</button>
+        <button type="submit" ng-click="form.attrs.preserve='preserve'">Copy</button>
+      </form>
+    </li>
+  </ul>
+
+  <div>
+    Search: <input ng-model="query.name" placeholder="file name">
+  </div>
+
+  <div class="row">
+
+    <table class="fcmder_files-table table-style">
+      <tbody>
+        <tr>
+          <th ng-click="onOrderClick('name')" class="col-md-3">
+                Name <small>{{orderMarker.name | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('mtime')" class="col-md-2">
+                Date modified <small>{{orderMarker.mtime | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('size')" class="col-md-1">
+                Size <small>{{orderMarker.size | marker}}</small>
+          </th>
+          <th ng-click="onOrderClick('kind')" class="col-md-1">
+                Kind <small>{{orderMarker.kind | marker}}</small>
+          </th>
+          <th class="col-md-5">
+                Actions
+          </th>
+        </tr>
+        <tr>
+          <td class="col-md-3">
+            <a href="{{'#' + (parentDir | url)}}">{{parentDir.name}}</a>
+          </td>
+          <td class="col-md-2"></td>
+          <td class="col-md-1"></td>
+          <td class="col-md-1"></td>
+          <td class="col-md-5"></td>
+        </tr>
+        <tr ng-repeat="item in items | filter:query | orderBy:orderProp">
+          <td class="col-md-3">
+            <a href="{{'#' + (item | url)}}">{{item.name}}</a>
+          </td>
+          <td class="col-md-2">
+            <span>{{item | mtime}}</span>
+          </td>
+          <td class="col-md-1">
+            <span>{{item | size}}</span>
+          </td>
+          <td class="col-md-1">
+            <span>{{item.kind}}</span>
+          </td>
+          <td class="col-md-5">
+            <ul>
+              <li>
+                <form ng-controller="FormPostCtrl" ng-submit="onSubmit()">
+                  <input type="text" ng-model="form.attrs.name" ng-init="form.attrs.name=item.name" />
+                  <input type="hidden" ng-model="form.attrs.local" ng-init="form.attrs.local=item.path" />
+                  <button type="submit">Rename</button>
+                </form>
+              </li>
+              <li>
+                <form ng-controller="FormDeleteCtrl" ng-submit="onSubmit()">
+                  <label><input type="checkbox" ng-model="form.attrs.force" /> force removal</label>
+                  <button type="submit">Delete</button>
+                </form>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

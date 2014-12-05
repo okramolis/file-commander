@@ -1,0 +1,14 @@
+/*
+  Plain Application Stylesheet
+*/
+
+.fcmder_files-table ul li {
+  display: inline-block;
+}
+
+.fcmder_cdir-commands li {
+  vertical-align: top;
+  display: inline-block;
+  padding: 0.5em;
+  margin: 0.5em;
+}

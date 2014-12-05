@@ -17,6 +17,7 @@ const STATIC_PATH               = '/static'
   ,   LOGOUT_ROUTE              = '/logout'
   ,   HOME_ROUTE                = '/home'
   ,   LOGOUT_REDIR_ROUTE        = LOGIN_ROUTE
+  ,   FCMDER_NG_APP_NAME        = 'fcmderApp'
   ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
   ,   HTML5_SUPPORT             = {
@@ -328,6 +329,7 @@ function renderMainAppMiddleware(req, res, next) {
 function renderPlainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path  = req.fcmder.fs.path.name;
   res.locals.appkey.app.files = req.fcmder.fs.files;
+  res.locals.appkey.app.parentPath = path.dirname(req.fcmder.fs.path.name);
   simpleRenderer(req, res, next);
 }
 
@@ -349,6 +351,7 @@ function redirBackMiddleware(req, res, next) {
     return;
   }
   // TODO set session properties to let the client know message and other data
+  // TODO set res.status according state.code
   res.redirect('back');
 } // END of redirBackMiddleware
 
@@ -426,6 +429,9 @@ function reqInitMiddleware(req, res, next) {
 function resInitMiddleware(req, res, next) {
   res.locals = {
     appkey: {
+      root: {
+        attrs: {"ng-app": FCMDER_NG_APP_NAME}
+      },
       body: {},
       app : {},
       req : {
