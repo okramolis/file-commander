@@ -1,3 +1,4 @@
 static/*
 !static/scripts/
 !static/templates/
+!static/styles/
