@@ -12,20 +12,19 @@ function configure(options) {
     var userSchema = new db.Schema({
       username: {// local strategy
         type  : String,
+        sparse: true,
         unique: true
       },
       password: String, // local strategy TODO: store encryped form
-      id: { // TODO ensure uniqueness of "id" and "provider" pair
-        type  : String,
-        index : true
-      },
-      provider: {
-        type  : String,
-        index : true
-      },
       displayName: String,
-      openId: {
+      githubId: {
         type  : String,
+        sparse: true,
+        unique: true
+      },
+      googleId: {
+        type  : String,
+        sparse: true,
         unique: true
       }
     });

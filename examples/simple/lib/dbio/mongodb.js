@@ -12,6 +12,7 @@ function Connection(config) {
   // store configuration
   this._host = config.host || 'localhost';
   this._name = config.name || 'test';
+  this._port = config.port;
 
   // create database
   this._db = mongoose.createConnection();
@@ -36,7 +37,7 @@ util.inherits(Connection, base.Connection);
 // ------------------------------------------
 
 Connection.prototype.connect = function() {
-  this._db.open(this._host, this._name);
+  this._db.open(this._getDbOpenString());
 } // END of connect
 
 Connection.prototype.disconnect = function(callback) {
@@ -52,6 +53,10 @@ Connection.prototype.Schema = mongoose.Schema;
 // ------------------------------------------
 // Implementation of private methods
 // ------------------------------------------
+
+Connection.prototype._getDbOpenString = function() {
+  return 'mongodb://' + this._host + ((this._port) ? ':' + this._port : '') + '/' + this._name;
+}
 
 Connection.prototype._connectDbEvents = function(names) {
   for (var i = 0, len = names.length; i < len; i++) {

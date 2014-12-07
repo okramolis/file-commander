@@ -46,3 +46,12 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
+/*
+  Common application style
+*/
+
+/* Login page */
+#local-auth input {
+  display: block;
+}

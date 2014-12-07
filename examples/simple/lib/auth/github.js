@@ -1,15 +1,14 @@
-var Strategy  = require('passport-local').Strategy
+var Strategy  = require('passport-github').Strategy
   , Router    = require('express').Router
-  , BaseAuth  = require('./auth').Local
+  , BaseAuth  = require('./auth').OAuth2
   , util      = require('util')
 ;
-
-const NAME = 'local';
+const NAME = 'github';
 
 function Auth(options) {
   // construct base class instance
   BaseAuth.call(this, NAME, Strategy, options);
-} // END of Auth
+}
 
 // perform the inheritance
 util.inherits(Auth, BaseAuth);
@@ -17,15 +16,18 @@ util.inherits(Auth, BaseAuth);
 // ---------------------
 // Auth - implementation
 // ---------------------
-Auth.prototype._query = function(username) {
+Auth.prototype._query = function(profile) {
   return {
-    username: username
+    githubId: profile.id
   };
 }
 
-Auth.prototype._auth = function(user, password) {
-  // TODO work with user hash - user password in encrypted form
-  return user.password === password;
+Auth.prototype._model = function(profile) {
+  return {
+    githubId: profile.id,
+    // TODO set default displayName if not provided
+    displayName: profile.displayName || profile.username
+  };
 }
 
 // ----------------

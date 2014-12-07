@@ -102,17 +102,44 @@ var auth = authmod.configure({
 // create authentication strategies
 var strategies = {}
   , stratConfig = appConfig.auth.strategies
+  , stratLocals = {links: []}
 ;
-for (var strategy in stratConfig) {
-  var Auth = require('./lib/auth/' + strategy).Auth;
-  strategies[strategy] = new Auth(
+if (!!stratConfig && !Array.isArray(stratConfig)) {
+  throw new Error('file-commander: invalid configuration - authentication strategies must be an array.');
+}
+
+stratConfig.forEach(function(strategy) {
+  var name = strategy.name
+    , Auth = require('./lib/auth/' + name).Auth
+  ;
+  // set strategies locals data
+  if (name === 'local') {
+    stratLocals.local = {
+      postRoute : strategy.postRoute,
+      fields    : {
+        username: strategy.fields.username,
+        password: strategy.fields.password
+      }
+    }
+  } else {
+    stratLocals.links.push({
+      sendRoute : strategy.sendRoute,
+      nice      : strategy.nice,
+      name      : name
+    });
+  }
+  // create strategies instances
+  strategies[name] = new Auth(
     _.extend({
       manager : auth,
       db      : db,
       model   : USER_MODEL_NAME
-    }, stratConfig[strategy])
+    }, strategy)
   );
-}
+});
+
+// store auth locals config in app object
+app.set('authLocals', stratLocals);
 
 // -------------------------------------------------------------------
 // APP CONFIGURATION
@@ -304,18 +331,8 @@ function renderLoginMiddleware(req, res, next) {
   // optional success redirection after login
   res.locals.appkey.redir = req.query.redir;
   // parameters for authentication strategies
-  res.locals.appkey.auth = { // TODO prebuild this object according to auth configuration
-    local: {
-      // TODO add parameters for local.jade view
-      fields: {
-        username: 'username',
-        password: 'password'
-      }
-    },
-    links: [
-      // TODO add auth strategies with their parameters for link.jade view
-    ]
-  };
+  res.locals.appkey.auth = app.get('authLocals');
+  // render response
   simpleRenderer(req, res, next);
 } // END of renderLoginMiddleware
 

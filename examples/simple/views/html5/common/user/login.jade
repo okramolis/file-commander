@@ -1,22 +1,18 @@
 extends ../layouts/layout.jade
 
 mixin linkProvider(href, name)
-  a(href=href)&attributes(attributes) Sing in with #{name}
+  a(href=href)= name
 
 block content
-  ul
-    if (appkey.auth.hasOwnProperty('local'))
-      li
-        form(action="/login", method="post")
-          div
-            label Username:
-            input(type="text", name=appkey.auth.local.fields.username)
-          div
-            label Password:
-            input(type="password", name=appkey.auth.local.fields.password)
-          div
-            input(type="submit", value="Sing in")
-    if (appkey.auth.hasOwnProperty('links') && Array.isArray(appkey.auth.links))
-      each link in appkey.auth.links
-        li
-          +linkProvider(link.href, name)(link.attributes)
+  if (appkey.auth.hasOwnProperty('local'))
+    div#local-auth
+      form(action=appkey.auth.local.postRoute, method="post")
+        input(type="text", placeholder="Username", name=appkey.auth.local.fields.username)
+        input(type="password", placeholder="Password", name=appkey.auth.local.fields.password)
+        input(type="submit", value="Sing in")
+  if (appkey.auth.hasOwnProperty('links') && Array.isArray(appkey.auth.links) && appkey.auth.links.length > 0)
+    div#providers-auth Sing in with:
+      ul
+        each link in appkey.auth.links
+          li
+            +linkProvider(link.sendRoute, link.nice || link.name)

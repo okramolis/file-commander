@@ -23,18 +23,21 @@
   },
   "app": {
     "net": {
-      "port": 8888
+      "port": 8006
     },
     "auth": {
-      "strategies": {
-        "local": {
-          "postRoute": "/login",
-          "settings": {
-            "successRedirect": "/home",
-            "failureRedirect": "/login"
-          }
+      "strategies": [{
+        "name": "local",
+        "fields": {
+          "username": "username",
+          "password": "password"
+        },
+        "postRoute": "/login",
+        "settings": {
+          "successRedirect": "/home",
+          "failureRedirect": "/login"
         }
-      }
+      }]
     }
   }
 }

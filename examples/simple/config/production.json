@@ -1,0 +1,50 @@
+{
+  "db": {
+    "settings": {
+      "name": "file_commander",
+      "host": "--add--your--mongodb--host--",
+      "port": "--add--your--mongodb--port--number--"
+    },
+    "type": "mongodb"
+  },
+  "app": {
+    "net": {
+      "port": 8006
+    },
+    "auth": {
+      "strategies": [{
+        "name": "google",
+        "nice": "Google",
+        "sendRoute": "/auth/google",
+        "backRoute": "/auth/google/callback",
+        "strategy": {
+          "clientID": "--add--your--client--id--",
+          "clientSecret": "--add--your--client--secret--",
+          "callbackURL": "http://file-commander.com/auth/google/callback"
+        },
+        "provided": {
+          "scope": "https://www.googleapis.com/auth/userinfo.profile"
+        },
+        "settings": {
+          "successRedirect": "/home",
+          "failureRedirect": "/login"
+        }
+      },{
+        "name": "github",
+        "nice": "GitHub",
+        "sendRoute": "/auth/github",
+        "backRoute": "/auth/github/callback",
+        "strategy": {
+          "clientID": "--add--your--client--id--",
+          "clientSecret": "--add--your--client--secret--",
+          "callbackURL": "http://file-commander.com/auth/github/callback"
+        },
+        "settings": {
+          "successRedirect": "/home",
+          "failureRedirect": "/login"
+        }
+      }]
+    }
+  }
+}
+
