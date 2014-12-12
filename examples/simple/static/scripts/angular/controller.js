@@ -120,7 +120,7 @@ fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'file
       // inform user about ignored files
       if (ignored.size.length > 0) {
         $scope.$emit('alert', 'Files: "' + ignored.size.join('", "') +
-                              '" were igonred due to size limit ' +
+                              '" were ignored due to size limit ' +
                               (limit / MB) + 'MB per request.');
       }
 
