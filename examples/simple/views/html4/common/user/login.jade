@@ -3,21 +3,28 @@ extends ../layouts/layout.jade
 mixin linkProvider(href, name)
   a(href=href)= name
 
+block nav
+  include ../../common/mixins/base.jade
+  .navigation
+    .fcmder_app-pages
+      +navHome('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
+
 block content
-  if (appkey.auth.hasOwnProperty('local'))
-    div#local-auth
-      form(action=appkey.auth.local.postRoute, method="post")
-        div
-          label(for="username") Username:
-          input#username(type="text", name=appkey.auth.local.fields.username)
-        div
-          label(for="password") Password:
-          input#password(type="password", name=appkey.auth.local.fields.password)
-        div
-          input(type="submit", value="Sing in")
-  if (appkey.auth.hasOwnProperty('links') && Array.isArray(appkey.auth.links) && appkey.auth.links.length > 0)
-    div#providers-auth Sing in with:
-      ul
-        each link in appkey.auth.links
-          li
-            +linkProvider(link.sendRoute, link.nice || link.name)
+  .container
+    if (appkey.auth.hasOwnProperty('local'))
+      div#fcmder_local-auth
+        form(action=appkey.auth.local.postRoute, method="post")
+          div
+            label(for="username") Username:
+            input#username(type="text", name=appkey.auth.local.fields.username)
+          div
+            label(for="password") Password:
+            input#password(type="password", name=appkey.auth.local.fields.password)
+          div
+            input(type="submit", value="Log in")
+    if (appkey.auth.hasOwnProperty('links') && Array.isArray(appkey.auth.links) && appkey.auth.links.length > 0)
+      div#fcmder_providers-auth Log in with:
+        ul
+          each link in appkey.auth.links
+            li
+              +linkProvider(link.sendRoute, link.nice || link.name)

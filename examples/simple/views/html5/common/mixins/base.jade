@@ -1,0 +1,70 @@
+mixin navCurrent(text)
+  span= text
+
+mixin navLink(href, text)
+  a(href=href)= text
+
+//- ----------------------------------
+//- ROOT ITEM
+//- ----------------------------------
+mixin navItemRootCurrent()
+  li
+    +navCurrent('File Commander')
+
+mixin navItemRootLink(link)
+  li
+    +navLink(link, 'File Commander')
+
+//- ----------------------------------
+//- PUBLIC ITEM
+//- ----------------------------------
+mixin navItemPublicCurrent()
+  li
+    +navCurrent('Public files')
+
+mixin navItemPublicLink(link)
+  li
+    +navLink(link, 'Public files')
+
+//- ----------------------------------
+//- from PRIVATE FILES page
+//- ----------------------------------
+mixin navPrivate(root, public)
+  ul
+    +navItemRootLink(root)
+    +navItemPublicLink(public)
+
+//- ----------------------------------
+//- from PUBLIC FILES page
+//- ----------------------------------
+mixin navPublic(root)
+  ul
+    +navItemRootLink(root)
+    +navItemPublicCurrent()
+
+//- ----------------------------------
+//- from USER HOME page
+//- ----------------------------------
+mixin navHome(root, public)
+  +navPrivate(root, public)
+
+//- ----------------------------------
+//- from APP ROOT page
+//- ----------------------------------
+mixin navRoot(public)
+  ul
+    +navItemRootCurrent()
+    +navItemPublicLink(public)
+
+//- ----------------------------------
+//- USER COMMANDS
+//- ----------------------------------
+mixin userCmd(href, text)
+  li
+    a(href=href)= text
+
+mixin userCmds(...items)
+  ul
+    - for (var i = 0, len = items.length; i < len; i += 2)
+      +userCmd(items[i], items[i+1])
+

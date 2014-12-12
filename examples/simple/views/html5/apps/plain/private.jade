@@ -3,54 +3,65 @@ extends ../../common/layouts/layout.jade
 append styles
   link(rel="stylesheet" type="text/css" href="/styles/plain.css")
 
+block nav
+  include ../../common/mixins/base.jade
+  nav
+    .fcmder_app-pages
+      +navPrivate('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT)
+    .fcmder_user-cmds
+      +userCmds(CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
-  ul.fcmder_cdir-commands
-    li
-      div Upload files to current folder
-      form(action=appkey.req.path enctype="multipart/form-data" method="post")
-        input(type="file" name="upload" multiple="multiple")
-        button(type="submit") Upload
-    li
-      div Create a new folder in current folder
-      form(action=appkey.req.path method="post")
-        input(type="text" name="name" placeholder="Folder name")
-        button(type="submit") Create
-    li
-      div Copy or move selected elements to current folder
-      form(action=appkey.req.path method="post")
-        input(type="text" name="local" placeholder="Source path" required)
-        input(type="text" name="name" placeholder="New name")
-        button(type="submit") Move
-        button(type="submit" name="preserve" value="preserve") Copy
-  table.fcmder_files-table
-    tr
-      th Name
-      th Date modified
-      th Size
-      th Kind
-      th Actions
-    tr
-      td: a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT +
-                 CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT +
-                 appkey.app.parentPath)
-            | #{(appkey.app.parentPath == appkey.app.path) ? '.' : '..'}
-      td
-      td
-      td
-      td
-    each file in appkey.app.files.names
-      tr
-        td: a(href=appkey.req.path + file)= file
-        td: span= appkey.app.files.stats[file].mtime
-        td: span #{appkey.app.files.stats[file].size} bytes
-        td: span link: #{appkey.app.files.stats[file].isLink} directory: #{appkey.app.files.stats[file].isDir} file: #{appkey.app.files.stats[file].isFile}
-        td
-          ul
-            li
-              form(action=appkey.req.path method="post")
-                input(type="text" name="name" value=file)
-                input(type="hidden" name="local" value=appkey.app.path + file)
-                button(type="submit") Rename
-            li
-              form(action=appkey.req.path + file method="post")
-                button(type="submit" name="_method" value="delete") Delete
+  .container
+    .row
+      ul.fcmder_cdir-commands
+        li
+          div Upload files to current folder
+          form(action=appkey.req.path enctype="multipart/form-data" method="post")
+            input(type="file" name="upload" multiple="multiple" accept=appkey.app.uploadTypes)
+            button(type="submit") Upload
+        li
+          div Create a new folder in current folder
+          form(action=appkey.req.path method="post")
+            input(type="text" name="name" placeholder="Folder name")
+            button(type="submit") Create
+        li
+          div Copy or move selected elements to current folder
+          form(action=appkey.req.path method="post")
+            input(type="text" name="local" placeholder="Source path" required)
+            input(type="text" name="name" placeholder="New name")
+            button(type="submit") Move
+            button(type="submit" name="preserve" value="preserve") Copy
+    .row
+      table.fcmder_files-table
+        tr.row
+          th.col-sm-3 Name
+          th.col-sm-3 Date modified
+          th.col-sm-1 Size
+          th.col-sm-1 Kind
+          th.col-sm-4 Actions
+        tr.row
+          td.col-sm-3: a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT +
+                     CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT +
+                     appkey.app.parentPath)
+                | #{(appkey.app.parentPath == appkey.app.path) ? '.' : '..'}
+          td.col-sm-3
+          td.col-sm-1
+          td.col-sm-1
+          td.col-sm-4
+        each file in appkey.app.files.names
+          tr.row
+            td.col-sm-3: a(href=appkey.req.path + file)= file
+            td.col-sm-3: span= appkey.app.files.stats[file].mtime
+            td.col-sm-1: span= appkey.fn.meta2size(appkey.app.files.stats[file])
+            td.col-sm-1: span= appkey.fn.meta2kind(appkey.app.files.stats[file])
+            td.col-sm-4
+              ul
+                li
+                  form(action=appkey.req.path method="post")
+                    input(type="text" name="name" value=file)
+                    input(type="hidden" name="local" value=appkey.app.path + file)
+                    button(type="submit") Rename
+                li
+                  form(action=appkey.req.path + file method="post")
+                    button(type="submit" name="_method" value="delete") Delete

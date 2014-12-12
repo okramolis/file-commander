@@ -6,6 +6,7 @@
         "collection": "users",
         "content": {
           "_id": "__27138414583168924",
+          "provider": "local",
           "username": "test",
           "password": "test"
         }
@@ -13,6 +14,7 @@
         "collection": "users",
         "content": {
           "_id": "__37138414583168924",
+          "provider": "local",
           "username": "user",
           "password": "user",
           "displayName": "User"
@@ -24,6 +26,17 @@
   "app": {
     "net": {
       "port": 8006
+    },
+    "mimes": [
+        "application/pdf"
+      , "application/xml"
+      , "application/json"
+      , "text/plain"
+      , "text/html"
+      , "text/xml"
+    ],
+    "upload": {
+      "bytesPerReqLimit": 1048576
     },
     "auth": {
       "strategies": [{

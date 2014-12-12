@@ -1,7 +1,6 @@
 extends ../../common/layouts/layout.jade
 
 append styles
-  link(rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css")
   link(rel="stylesheet" type="text/css" href="/styles/main.css")
 
 append scripts
@@ -13,8 +12,17 @@ append scripts
   script(type="text/javascript" src="/scripts/angular/controller.js")
   script(type="text/javascript" src="/scripts/angular/filters.js")
 
+block nav
+  include ../../common/mixins/base.jade
+  nav
+    .fcmder_app-pages
+      +navPrivate('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
+    .fcmder_user-cmds
+      +userCmds(CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
   div(ng-view)
-    p JavaScript support not detected. Please use 
-      a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT + appkey.app.path) plain application
-      |  instead.
+    .container
+      p JavaScript support not detected. Please use 
+        a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT + appkey.app.path) plain application
+        |  instead.

@@ -1,14 +1,14 @@
 {
   "name": "file-commander",
   "description": "File manager for express",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Ondrej Kramolis  <o.kramolis@seznam.cz>",
   "dependencies": {
     "express": "~4.10.0",
     "async": "~0.9.0",
     "underscore": "~1.7.0",
     "fs-extra": "~0.12.0",
-    "formidable": "~1.0.15",
+    "multiparty": "~4.1.0",
     "mime-magic": "~5.14.0",
     "type-is": "~1.5.3"
   },

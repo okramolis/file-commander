@@ -10,6 +10,7 @@ function configure(options) {
       !!col   && typeof col   === 'string'
   ) {
     var userSchema = new db.Schema({
+      provider: String,
       username: {// local strategy
         type  : String,
         sparse: true,

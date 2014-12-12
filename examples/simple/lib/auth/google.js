@@ -36,6 +36,7 @@ Auth.prototype._query = function(profile) {
 
 Auth.prototype._model = function(profile) {
   return {
+    provider: NAME,
     googleId: profile.id,
     // TODO set default displayName if not provided
     displayName: profile.displayName

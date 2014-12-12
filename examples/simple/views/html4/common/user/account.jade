@@ -1,10 +1,17 @@
 extends ../layouts/layout.jade
 
+block nav
+  include ../../common/mixins/base.jade
+  .navigation
+    .fcmder_app-pages
+      +navHome('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
+    .fcmder_user-cmds
+      +userCmds(CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT, 'My files', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
-  p Home again. I am #{appkey.user.displayName || appkey.user.username}!
-  p Here are 
-    a(href="/files") my files
-    | .
-  p I can go away via this link: 
-    a(href="/logout") Logout
-    | .
+  .container
+    p Logged in as 
+      span.fcmder_user-name #{appkey.user.displayName || appkey.user.username}
+      |  using 
+      span.fcmder_auth-provider #{appkey.user.provider}
+      |  authentication method.

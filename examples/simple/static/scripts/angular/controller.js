@@ -5,6 +5,11 @@
 var fcmderControllers = angular.module('fcmderControllers', []);
 
 //-----------------------------
+// CONSTANTS
+//-----------------------------
+fcmderControllers.constant('MB', Math.pow(2, 20));
+
+//-----------------------------
 // File list item constructor
 //-----------------------------
 fcmderControllers.factory('Item', function() {
@@ -85,13 +90,43 @@ fcmderControllers.directive('fileUploadFormWatch', [
 //------------------------
 // Submitted form handlers
 //------------------------
-fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'fileUpload',
-  function($scope, $http, Item, fileUpload){
+fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'fileUpload', 'MB',
+  function($scope, $http, Item, fileUpload, MB){
     $scope.onSubmit = function(){
       var files = $scope.files2upload;
       if (!files) { return; }
+      var filtered = []
+        , ignored  = {
+            size: []
+          }
+        , limit = $scope.UPLOAD_BYTES_LIMIT
+        , uploading = []
+          // TODO implement some method for this purpose
+        , upid = ('' + Math.random()).slice(2)
+      ;
+
+      // check file size for each file
+      for (var i = 0, sum = 0, len = files.length; i < len; i++) {
+        if (sum + files[i].size > limit) {
+          // ignore file that exceeds upload limit
+          ignored.size.push(files[i].name);
+          continue;
+        }
+        filtered.push(files[i]);
+        uploading.push(files[i].name);
+        sum += files[i].size;
+      }
+
+      // inform user about ignored files
+      if (ignored.size.length > 0) {
+        $scope.$emit('alert', 'Files: "' + ignored.size.join('", "') +
+                              '" were igonred due to size limit ' +
+                              (limit / MB) + 'MB per request.');
+      }
+
+      // send request
       var uploadUrl = fcmderUtils.path.join('rest-api', $scope.currentDir.path);
-      fileUpload.uploadFileToUrl(files, uploadUrl)
+      fileUpload.uploadFileToUrl(filtered, uploadUrl)
       .success(function(res){
         if (res.status === 201) {
           // New data created.
@@ -136,7 +171,10 @@ fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'file
           return;
         }
       })
-      .error($scope.handleErrHttp);
+      .error($scope.handleErrHttp).then($scope.closeAction.bind(null, upid));
+
+      // inform user about request in progress
+      $scope.$emit('action', 'Uploading files: "' + uploading.join('", "') + '" ...', upid, 'success');
     }
   }
 ]);
@@ -275,6 +313,7 @@ fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
 fcmderControllers.controller('TemplateCtrl', ['$scope',
   function ($scope) {
     $scope.alerts = [];
+    $scope.actions = [];
 
     $scope.$on('alert', function(e, msg, type) {
       if (typeof msg !== 'string') {
@@ -295,6 +334,31 @@ fcmderControllers.controller('TemplateCtrl', ['$scope',
 
     $scope.closeAlert = function(index) {
       $scope.alerts.splice(index, 1);
+    }
+
+    $scope.$on('action', function(e, msg, id, type) {
+      if (typeof msg !== 'string') {
+        msg = 'In progress ...'
+      }
+      // TODO somehow add type of progress indication (via bootstrap)
+      // - progress bar (circle) if current completion state is going to be known
+      // - something happening indicator (circle without completion state) by default
+      $scope.actions.push({msg: msg, id: id, type: type});
+    });
+
+    $scope.closeAction = function(id) {
+      var arr = $scope.actions
+        , index = -1
+      ;
+      for (var i = 0, len = arr.length; i < len; i++) {
+        if (arr[i].id === id) {
+          index = i;
+          break;
+        }
+      }
+      if (index !== -1) {
+        arr.splice(index, 1);
+      }
     }
 
     $scope.handleErrHttp = function(res) {

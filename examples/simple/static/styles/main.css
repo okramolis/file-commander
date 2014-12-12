@@ -2,20 +2,26 @@
   Main Application Stylesheet
 */
 
-.fcmder_files-table ul li {
-  display: inline-block;
-}
-
-.fcmder_cdir-commands li {
-  vertical-align: top;
-  display: inline-block;
-  padding: 0.5em;
-  margin: 0.5em;
-}
-
 /*
   Bootstrap override
 */
 input[type="file"] {
   display: inline-block;
+}
+
+.fcmder_files-table ul {
+  margin-bottom: 0px;
+}
+
+/*
+  JavaScript elements only
+*/
+.fcmder_file-filter {
+  padding: 6px;
+  margin: 6px 4px;
+}
+
+.fcmder_order-marker {
+  float: right;
+  padding: 1px 0px 1px 4px;
 }

@@ -52,6 +52,62 @@ table {
 */
 
 /* Login page */
-#local-auth input {
+#fcmder_local-auth, #fcmder_providers-auth {
+  clear: both;
+}
+#fcmder_local-auth input {
   display: block;
+}
+
+/* Possibly for all */
+.fcmder_inprogress {
+  background: url("/images/loading-alert.gif") 98% 17px no-repeat;
+}
+
+/* Navigation */
+.fcmder_app-pages {
+  float: left;
+}
+.fcmder_user-cmds {
+  text-align: right;
+}
+.fcmder_user-cmds > ul > li, .fcmder_app-pages > ul > li {
+  display: inline-block;
+  padding: 6px;
+  margin: 6px;
+}
+
+/* Files table */
+.fcmder_files-table tr:nth-child(odd) {
+  background-color:#f3f3f3;
+}
+.fcmder_files-table tr:nth-child(even) {
+  background-color:#ffffff;
+}
+.fcmder_files-table tr:first-child {
+  background-color: #e8e8e8;
+}
+
+.fcmder_files-table td, .fcmder_files-table th {
+  border: 1px solid #d8d8d8;
+}
+.fcmder_files-table th {
+  padding: 4px 8px;
+  text-align: left;
+  font-weight: bold;
+}
+.fcmder_files-table td {
+  padding: 8px 8px;
+}
+
+.fcmder_files-table ul li {
+  display: inline-block;
+}
+
+/* Current directory commands */
+.fcmder_cdir-commands li {
+  vertical-align: top;
+  display: inline-block;
+  padding: 0.5em;
+  margin: 0.5em;
 }

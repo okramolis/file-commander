@@ -3,16 +3,37 @@ extends ../../common/layouts/layout.jade
 append styles
   link(rel="stylesheet" type="text/css" href="/styles/plain.css")
 
+block nav
+  include ../../common/mixins/base.jade
+  nav
+    .fcmder_app-pages
+      +navPublic('/')
+    .fcmder_user-cmds
+      if (!appkey.user)
+        +userCmds(CONSTS.COMMANDER.LOGIN_ROUTE, 'Log in')
+      else
+        +userCmds(CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT, 'My files', CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
-  table
-    tr
-      th Name
-      th Date modified
-      th Size
-      th Kind
-    each file in appkey.app.files.names
-      tr
-        td: a(href=appkey.req.path + file)= file
-        td: span= appkey.app.files.stats[file].mtime
-        td: span #{appkey.app.files.stats[file].size} bytes
-        td: span link: #{appkey.app.files.stats[file].isLink} directory: #{appkey.app.files.stats[file].isDir} file: #{appkey.app.files.stats[file].isFile}
+  .container
+    .row
+      table.fcmder_files-table
+        tr.row
+          th.col-sm-5 Name
+          th.col-sm-5 Date modified
+          th.col-sm-1 Size
+          th.col-sm-1 Kind
+        tr.row
+          td.col-sm-5: a(href=CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT +
+                     CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT +
+                     appkey.app.parentPath)
+                | #{(appkey.app.parentPath == appkey.app.path) ? '.' : '..'}
+          td.col-sm-5
+          td.col-sm-1
+          td.col-sm-1
+        each file in appkey.app.files.names
+          tr.row
+            td.col-sm-5: a(href=appkey.req.path + file)= file
+            td.col-sm-5: span= appkey.app.files.stats[file].mtime
+            td.col-sm-1: span= appkey.fn.meta2size(appkey.app.files.stats[file])
+            td.col-sm-1: span= appkey.fn.meta2kind(appkey.app.files.stats[file])

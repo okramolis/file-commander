@@ -3,12 +3,20 @@ extends ../../common/layouts/layout.jade
 append styles
   link(rel="stylesheet" type="text/css" href="/styles/plain.css")
 
+block nav
+  include ../../common/mixins/base.jade
+  .navigation
+    .fcmder_app-pages
+      +navPrivate('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT)
+    .fcmder_user-cmds
+      +userCmds(CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
   ul.fcmder_cdir-commands
     li
       div Upload files to current folder
       form(action=appkey.req.path enctype="multipart/form-data" method="post")
-        input(type="file" name="upload" multiple="multiple")
+        input(type="file" name="upload" multiple="multiple" accept=appkey.app.uploadTypes)
         input(type="submit" value="Upload")
     li
       div Create a new folder in current folder
@@ -53,8 +61,8 @@ block content
       tr
         td: a(href=appkey.req.path + file)= file
         td: span= appkey.app.files.stats[file].mtime
-        td: span #{appkey.app.files.stats[file].size} bytes
-        td: span link: #{appkey.app.files.stats[file].isLink} directory: #{appkey.app.files.stats[file].isDir} file: #{appkey.app.files.stats[file].isFile}
+        td: span= appkey.fn.meta2size(appkey.app.files.stats[file])
+        td: span= appkey.fn.meta2kind(appkey.app.files.stats[file])
         td
           ul
             li

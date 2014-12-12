@@ -1,7 +1,7 @@
 {
   "name": "file-commander-demo",
   "description": "File manager for express demo application",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Ondrej Kramolis  <o.kramolis@seznam.cz>",
   "homepage": "http://file-commander.com/",
   "dependencies": {

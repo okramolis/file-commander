@@ -2,13 +2,13 @@
   Plain Application Stylesheet
 */
 
-.fcmder_files-table ul li {
+/*
+  Bootstrap override
+*/
+input[type="file"] {
   display: inline-block;
 }
 
-.fcmder_cdir-commands li {
-  vertical-align: top;
-  display: inline-block;
-  padding: 0.5em;
-  margin: 0.5em;
+.fcmder_files-table ul {
+  margin-bottom: 0px;
 }

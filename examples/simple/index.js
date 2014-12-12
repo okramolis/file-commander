@@ -1,6 +1,6 @@
 const STATIC_PATH               = '/static'
   ,   PRIVATE_PATH              = '/homes'
-  ,   PUBLIC_APP_URL_MOUNT      = '/commander'
+  ,   PUBLIC_APP_URL_MOUNT      = '/public'
   ,   PRIVATE_APP_URL_MOUNT     = '/files'
   ,   DEFAULT_PORT              = 8888
   ,   STATIC_SETTINGS           = {
@@ -12,12 +12,16 @@ const STATIC_PATH               = '/static'
   ,   PLAIN_APP_URL_MOUNT       = '/plain-app'
   ,   PLAIN_APP_VIEWS_MOUNT     = 'apps/plain/'
   ,   MAIN_APP_VIEWS_MOUNT      = 'apps/main/'
-  ,   USER_VIEWS_MOUNT          = 'common/user/'
+  ,   COMMON_VIEWS_MOUNT        = 'common/'
+  ,   USER_VIEWS_MOUNT          = COMMON_VIEWS_MOUNT + 'user/'
   ,   LOGIN_ROUTE               = '/login'
   ,   LOGOUT_ROUTE              = '/logout'
   ,   HOME_ROUTE                = '/home'
+  ,   ROOT_ROUTE                = '/'
   ,   LOGOUT_REDIR_ROUTE        = LOGIN_ROUTE
-  ,   FCMDER_NG_APP_NAME        = 'fcmderApp'
+  ,   NG_APP_NAME               = 'fcmderApp'
+  ,   NG_UPLOAD_BYTES_LIMIT_KEY = 'UPLOAD_BYTES_LIMIT'
+  ,   NG_UPLOAD_TYPES_KEY       = 'UPLOAD_TYPES'
   ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
   ,   HTML5_SUPPORT             = {
@@ -68,7 +72,11 @@ var dbio = require('./lib/dbio/' + dbConfig.type)
 ;
 
 // initialize constants
-const PORT = appConfig.net.port;
+const PORT                = appConfig.net.port
+      // TODO share supported mime types with file commander
+  ,   UPLOAD_BYTES_LIMIT  = appConfig.upload.bytesPerReqLimit
+  ,   UPLOAD_TYPES_STR    = appConfig.mimes.join()
+;
 
 // get app
 // ... express app
@@ -150,6 +158,9 @@ app.set('authLocals', stratLocals);
 app.locals = {
   CONSTS: {
     COMMANDER: {
+      LOGIN_ROUTE           : LOGIN_ROUTE,
+      LOGOUT_ROUTE          : LOGOUT_ROUTE,
+      HOME_ROUTE            : HOME_ROUTE,
       PUBLIC_APP_URL_MOUNT  : PUBLIC_APP_URL_MOUNT,
       PRIVATE_APP_URL_MOUNT : PRIVATE_APP_URL_MOUNT,
       PLAIN_APP_URL_MOUNT   : PLAIN_APP_URL_MOUNT
@@ -190,6 +201,16 @@ app.use(auth.session());
 
 // preprocess middleware
 app.use(reqInitMiddleware);
+
+// application home page
+app.get(
+  ROOT_ROUTE,
+  userAgentInitMiddleware,
+  resInitMiddleware,
+  viewsInitMiddleware,
+  getViewMiddleware(COMMON_VIEWS_MOUNT + 'index.jade'),
+  renderRootMiddleware
+);
 
 // application login page
 app.get(
@@ -317,12 +338,13 @@ app.route(PUBLIC_APP_ROUTE_EXP)
 // CUSTOM MIDDLEWARE DEFINITIONS
 // -------------------------------------------------------------------
 
+// renders app home page
+function renderRootMiddleware(req, res, next) {
+  simpleRenderer(req, res, next);
+} // END of renderHomeMiddleware
+
 // renders user home page
 function renderHomeMiddleware(req, res, next) {
-  res.locals.appkey.user = {
-    username    : req.user.username,
-    displayName : req.user.displayName
-  };
   simpleRenderer(req, res, next);
 } // END of renderHomeMiddleware
 
@@ -339,6 +361,10 @@ function renderLoginMiddleware(req, res, next) {
 // renders main app response
 function renderMainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path = req.fcmder.fs.path.name;
+  var attrs = res.locals.appkey.root.attrs;
+  attrs["ng-app"] = NG_APP_NAME;
+  attrs["ng-init"] = NG_UPLOAD_BYTES_LIMIT_KEY + '=' + UPLOAD_BYTES_LIMIT + ';' +
+                     NG_UPLOAD_TYPES_KEY + '=' + '\'' + UPLOAD_TYPES_STR + '\'';
   simpleRenderer(req, res, next);
 }
 
@@ -347,6 +373,9 @@ function renderPlainAppMiddleware(req, res, next) {
   res.locals.appkey.app.path  = req.fcmder.fs.path.name;
   res.locals.appkey.app.files = req.fcmder.fs.files;
   res.locals.appkey.app.parentPath = path.dirname(req.fcmder.fs.path.name);
+  res.locals.appkey.app.uploadTypes = UPLOAD_TYPES_STR;
+  res.locals.appkey.fn.meta2kind = meta2kind;
+  res.locals.appkey.fn.meta2size = meta2size;
   simpleRenderer(req, res, next);
 }
 
@@ -447,16 +476,24 @@ function resInitMiddleware(req, res, next) {
   res.locals = {
     appkey: {
       root: {
-        attrs: {"ng-app": FCMDER_NG_APP_NAME}
+        attrs: {}
       },
       body: {},
       app : {},
+      fn  : {},
       req : {
         path  : req.appkey.req.path,
         url   : req.appkey.req.url
       }
     }
   };
+  if (req.user) {
+    res.locals.appkey.user = {
+      provider    : req.user.provider,
+      username    : req.user.username,
+      displayName : req.user.displayName
+    };
+  }
   next();
 } // END of resInitMiddleware
 
@@ -540,6 +577,40 @@ function gracefulExit() {
   });
 } // END of gracefulExit
 
+function meta2kind(meta) {
+  if (!meta) {
+    return;
+  }
+  if (!!meta.isFile && !meta.isDir && !meta.isLink) {
+    return 'File';
+  }
+  if (!meta.isFile && !!meta.isDir && !meta.isLink) {
+    return 'Folder';
+  }
+  if (!meta.isFile && !meta.isDir && !!meta.isLink) {
+    return 'Alias';
+  }
+  return 'unknown'
+} // END of meta2kind
+
+function meta2size(meta) {
+  if (!meta) {
+    return;
+  }
+  if (meta.isDir) {
+    return '--';
+  }
+  if (meta.size < 1000) {
+    return meta.size + ' B';
+  }
+  if (meta.size < 1000000) {
+    return (Math.round(meta.size / 10) / 100) + ' KB';
+  }
+  if (meta.size < 1000000000) {
+    return (Math.round(meta.size / 10000) / 100) + ' MB';
+  }
+  return (Math.round(meta.size / 10000000) / 100) + ' GB';
+} // END of meta2size
 
 // -------------------------------------------------------------------
 // RESPONSE RENDERER DEFINITIONS

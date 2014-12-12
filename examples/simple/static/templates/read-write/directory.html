@@ -1,16 +1,22 @@
 <div class="container" ng-controller="TemplateCtrl">
 
-  <div>
+  <div class="row">
     <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">
       {{alert.msg}}
     </alert>
   </div>
 
-  <ul class="fcmder_cdir-commands">
+  <div class="row">
+    <alert ng-repeat="action in actions" type="{{action.type}}" class="fcmder_inprogress">
+      {{action.msg}}
+    </alert>
+  </div>
+
+  <ul class="row fcmder_cdir-commands">
     <li>
       <div>Upload files to current folder</div>
       <form ng-controller="FileUploadCtrl" ng-submit="onSubmit()" file-upload-form-watch>
-        <input type="file" name="upload" multiple="multiple" file-model="files2upload"/>
+        <input type="file" name="upload" multiple="multiple" accept={{UPLOAD_TYPES}} file-model="files2upload"/>
         <button type="submit">Upload</button>
       </form>
     </li>
@@ -32,54 +38,56 @@
     </li>
   </ul>
 
-  <div>
-    Search: <input ng-model="query.name" placeholder="file name">
+  <div class="row">
+    <div class="fcmder_file-filter">
+      Filter: <input ng-model="query.name" placeholder="file name">
+    </div>
   </div>
 
   <div class="row">
 
     <table class="fcmder_files-table table-style">
       <tbody>
-        <tr>
-          <th ng-click="onOrderClick('name')" class="col-md-3">
-                Name <small>{{orderMarker.name | marker}}</small>
+        <tr class="row">
+          <th ng-click="onOrderClick('name')" class="col-sm-3">
+            Name <small class="fcmder_order-marker">{{orderMarker.name | marker}}</small>
           </th>
-          <th ng-click="onOrderClick('mtime')" class="col-md-2">
-                Date modified <small>{{orderMarker.mtime | marker}}</small>
+          <th ng-click="onOrderClick('mtime')" class="col-sm-2">
+            Date modified <small class="fcmder_order-marker">{{orderMarker.mtime | marker}}</small>
           </th>
-          <th ng-click="onOrderClick('size')" class="col-md-1">
-                Size <small>{{orderMarker.size | marker}}</small>
+          <th ng-click="onOrderClick('size')" class="col-sm-1">
+            Size <small class="fcmder_order-marker">{{orderMarker.size | marker}}</small>
           </th>
-          <th ng-click="onOrderClick('kind')" class="col-md-1">
-                Kind <small>{{orderMarker.kind | marker}}</small>
+          <th ng-click="onOrderClick('kind')" class="col-sm-1">
+            Kind <small class="fcmder_order-marker">{{orderMarker.kind | marker}}</small>
           </th>
-          <th class="col-md-5">
+          <th class="col-sm-5">
                 Actions
           </th>
         </tr>
-        <tr>
-          <td class="col-md-3">
+        <tr class="row">
+          <td class="col-sm-3">
             <a href="{{'#' + (parentDir | url)}}">{{parentDir.name}}</a>
           </td>
-          <td class="col-md-2"></td>
-          <td class="col-md-1"></td>
-          <td class="col-md-1"></td>
-          <td class="col-md-5"></td>
+          <td class="col-sm-2"></td>
+          <td class="col-sm-1"></td>
+          <td class="col-sm-1"></td>
+          <td class="col-sm-5"></td>
         </tr>
-        <tr ng-repeat="item in items | filter:query | orderBy:orderProp">
-          <td class="col-md-3">
+        <tr class="row" ng-repeat="item in items | filter:query | orderBy:orderProp">
+          <td class="col-sm-3">
             <a href="{{'#' + (item | url)}}">{{item.name}}</a>
           </td>
-          <td class="col-md-2">
+          <td class="col-sm-2">
             <span>{{item | mtime}}</span>
           </td>
-          <td class="col-md-1">
+          <td class="col-sm-1">
             <span>{{item | size}}</span>
           </td>
-          <td class="col-md-1">
+          <td class="col-sm-1">
             <span>{{item.kind}}</span>
           </td>
-          <td class="col-md-5">
+          <td class="col-sm-5">
             <ul>
               <li>
                 <form ng-controller="FormPostCtrl" ng-submit="onSubmit()">

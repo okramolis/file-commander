@@ -1,6 +1,18 @@
 extends ../../common/layouts/layout.jade
 
+append styles
+  link(rel="stylesheet" type="text/css" href="/styles/main.css")
+
+block nav
+  include ../../common/mixins/base.jade
+  .navigation
+    .fcmder_app-pages
+      +navPrivate('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
+    .fcmder_user-cmds
+      +userCmds(CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
+
 block content
-  p JavaScript support not detected. Please use 
-    a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT + appkey.app.path) plain application
-    |  instead.
+  .container
+    p JavaScript application has not been implemented yet for HTML4. Please use 
+      a(href=CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT + appkey.app.path) plain application
+      |  instead.
