@@ -12,3 +12,33 @@ input[type="file"] {
 .fcmder_files-table ul {
   margin-bottom: 0px;
 }
+
+/*
+  Server message page
+*/
+#fcmder_server-msg {
+  padding: 2em;
+  text-align: center;
+}
+#fcmder_server-msg .fcmder_message,
+#fcmder_server-msg .fcmder_description,
+#fcmder_server-msg .fcmder_suggestion {
+  padding: 1em;
+  margin: 1.5em 0em;
+}
+#fcmder_server-msg .fcmder_message {
+  font-size: 133%;
+  font-weight: bold;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+#fcmder_server-msg.fcmder_success .fcmder_message {
+  background-color: #DFF0D8;
+  border-color: #D6E9C6;
+  color: #3C763D;
+}
+#fcmder_server-msg.fcmder_failure .fcmder_message {
+  background-color: #F2DEDE;
+  border-color: #EBCCD1;
+  color: #A94442;
+}

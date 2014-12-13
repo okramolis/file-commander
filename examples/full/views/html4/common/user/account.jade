@@ -4,7 +4,7 @@ block nav
   include ../../common/mixins/base.jade
   .navigation
     .fcmder_app-pages
-      +navHome('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
+      +navLinks('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT)
     .fcmder_user-cmds
       +userCmds(CONSTS.COMMANDER.PRIVATE_APP_URL_MOUNT, 'My files', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
 

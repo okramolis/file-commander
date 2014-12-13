@@ -22,6 +22,7 @@ const STATIC_PATH               = '/static'
   ,   NG_APP_NAME               = 'fcmderApp'
   ,   NG_UPLOAD_BYTES_LIMIT_KEY = 'UPLOAD_BYTES_LIMIT'
   ,   NG_UPLOAD_TYPES_KEY       = 'UPLOAD_TYPES'
+  ,   MEGA_BYTE                 = Math.pow(2,20)
   ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
   ,   HTML5_SUPPORT             = {
@@ -76,6 +77,8 @@ const PORT                = appConfig.net.port
       // TODO share supported mime types with file commander
   ,   UPLOAD_BYTES_LIMIT  = appConfig.upload.bytesPerReqLimit
   ,   UPLOAD_TYPES_STR    = appConfig.mimes.join()
+  ,   LONG_RUNNING_TASK_MS= appConfig.timers.longRunningTask
+  ,   MSG_PAGE_TIMEOUT_S  = appConfig.timers.msgPageTimeout
 ;
 
 // get app
@@ -245,24 +248,27 @@ for (var key in strategies) {
 // --------------------------------------
 // use file commander - private PLAIN APP
 // --------------------------------------
+var privatePlainAppMsgViewMiddleware = getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'msg.jade');
 app.use(PRIVATE_APP_URL_MOUNT + PLAIN_APP_URL_MOUNT, privateApp.serverBased());
 // process file commander result
 app.route(PRIVATE_PLAIN_APP_ROUTE_EXP)
 .all(
-  validateCommanderMiddleware
-)
-.get(
+  validateCommanderMiddleware,
   userAgentInitMiddleware,
   resInitMiddleware,
-  viewsInitMiddleware,
+  viewsInitMiddleware
+)
+.get(
   getViewMiddleware(PLAIN_APP_VIEWS_MOUNT + 'private.jade'),
   renderPlainAppMiddleware
 )
 .post(
-  redirBackMiddleware
+  privatePlainAppMsgViewMiddleware,
+  renderPlainAppMsgMiddleware
 )
 .delete(
-  redirBackMiddleware
+  privatePlainAppMsgViewMiddleware,
+  renderPlainAppMsgMiddleware
 );
 // not found middleware sub-stack
 app.route(PRIVATE_PLAIN_APP_ROUTE_EXP)
@@ -374,6 +380,7 @@ function renderPlainAppMiddleware(req, res, next) {
   res.locals.appkey.app.files = req.fcmder.fs.files;
   res.locals.appkey.app.parentPath = path.dirname(req.fcmder.fs.path.name);
   res.locals.appkey.app.uploadTypes = UPLOAD_TYPES_STR;
+  res.locals.appkey.app.uploadLimit = (UPLOAD_BYTES_LIMIT / MEGA_BYTE) + ' MB';
   res.locals.appkey.fn.meta2kind = meta2kind;
   res.locals.appkey.fn.meta2size = meta2size;
   simpleRenderer(req, res, next);
@@ -383,6 +390,25 @@ function redirLogoutMiddleware(req, res){
   req.logout();
   res.redirect(LOGOUT_REDIR_ROUTE);
 }
+
+function renderPlainAppMsgMiddleware(req, res, next) {
+  var state = req.fcmder.state;
+  if (!state || !state.code) {
+    next({
+      msg : 'Internal server error.',
+      desc: 'Invalid state format.'
+    });
+    return;
+  }
+  var locals = res.locals.appkey.app;
+  // prevent automatic redirection for long run tasks
+  locals.autoRedirect = (Date.now() - req.appkey.timer) < LONG_RUNNING_TASK_MS;
+  locals.state = state;
+  locals.timeout = MSG_PAGE_TIMEOUT_S;
+  locals.redirect = getRedirectBackAddress(req);
+  res.status(state.code);
+  simpleRenderer(req, res, next);
+} // END of renderPlainAppMsgMiddleware
 
 // redirects back with message and status
 // - mainly used for serving POST method of request
@@ -463,6 +489,7 @@ function authorizeOwnerMiddleware(req, res, next) {
 // - shall be the first one from custom middleware chain
 function reqInitMiddleware(req, res, next) {
   req.appkey = {
+    timer: Date.now(),
     req: {
       path: decodeURIComponent(req.path),
       url: decodeURIComponent(req.url)
@@ -500,9 +527,6 @@ function resInitMiddleware(req, res, next) {
 // sets user-agent specific attributes regarding a current request
 function userAgentInitMiddleware(req, res, next) {
   var ua = useragent.parse(req.headers['user-agent']);
-  console.log('userAgent:');
-  console.log(ua);
-
   var html5min = HTML5_SUPPORT[ua.family];
   req.appkey.ua = {
     html4: (
@@ -562,6 +586,11 @@ function overrideBodyMethod(req, res){
     delete req.body._method
     return method
   }
+}
+
+// returns address with express uses for redirection to 'back' (res.redirect('back'))
+function getRedirectBackAddress(req) {
+  return req.get('Referrer') || '/';
 }
 
 function gracefulExit() {

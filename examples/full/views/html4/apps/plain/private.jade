@@ -7,14 +7,16 @@ block nav
   include ../../common/mixins/base.jade
   .navigation
     .fcmder_app-pages
-      +navPrivate('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT)
+      +navLinks('/', CONSTS.COMMANDER.PUBLIC_APP_URL_MOUNT + CONSTS.COMMANDER.PLAIN_APP_URL_MOUNT)
     .fcmder_user-cmds
       +userCmds(CONSTS.COMMANDER.HOME_ROUTE, 'Home', CONSTS.COMMANDER.LOGOUT_ROUTE, 'Log out')
 
 block content
   ul.fcmder_cdir-commands
     li
-      div Upload files to current folder
+      div Upload files to current folder (up to 
+        strong #{appkey.app.uploadLimit}
+        |  per request)
       form(action=appkey.req.path enctype="multipart/form-data" method="post")
         input(type="file" name="upload" multiple="multiple" accept=appkey.app.uploadTypes)
         input(type="submit" value="Upload")

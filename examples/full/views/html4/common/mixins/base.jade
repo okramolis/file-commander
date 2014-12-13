@@ -27,9 +27,9 @@ mixin navItemPublicLink(link)
     +navLink(link, 'Public files')
 
 //- ----------------------------------
-//- from PRIVATE FILES page
+//- from OUTSIDE of nav items
 //- ----------------------------------
-mixin navPrivate(root, public)
+mixin navLinks(root, public)
   ul
     +navItemRootLink(root)
     +navItemPublicLink(public)
@@ -41,12 +41,6 @@ mixin navPublic(root)
   ul
     +navItemRootLink(root)
     +navItemPublicCurrent()
-
-//- ----------------------------------
-//- from USER HOME page
-//- ----------------------------------
-mixin navHome(root, public)
-  +navPrivate(root, public)
 
 //- ----------------------------------
 //- from APP ROOT page

@@ -27,6 +27,10 @@
     "net": {
       "port": 8006
     },
+    "timers": {
+      "longRunningTask": 2000,
+      "msgPageTimeout": 4
+    },
     "mimes": [
         "application/pdf"
       , "application/xml"
