@@ -1,5 +1,11 @@
-var fcmderUtils = {
-  app: {
+'use strict';
+
+/* Utilities */
+
+angular.module('fcmderUtils', [])
+.service('fcmderUtils.service', function() {
+  var self = this;
+  this.app = {
     kind2mount: function(kind) {
       switch(kind) {
         case 'File':
@@ -22,11 +28,11 @@ var fcmderUtils = {
     },
     path2url: function(path) {
       // TODO read mount via other way - move 'rest-api/' definition outside of js
-      var url = fcmderUtils.path.join(location.pathname, 'rest-api/');
+      var url = self.path.join(location.pathname, 'rest-api/');
       if (typeof path === 'string') {
-        url = fcmderUtils.path.join(url, path);
+        url = self.path.join(url, path);
       }
-      url = fcmderUtils.path.removeTrailingSlash(url);
+      url = self.path.removeTrailingSlash(url);
       return (!url || typeof url !== 'string') ? null : url;
     },
     meta2kind: function(meta) {
@@ -44,9 +50,9 @@ var fcmderUtils = {
       }
       return 'unknown'
     }
-  },
+  };
   // TODO add browserified versions for path utils
-  path: {
+  this.path = {
     removeTrailingSlash: function(p) {
       if (typeof p !== 'string') {
         return null;
@@ -84,7 +90,7 @@ var fcmderUtils = {
       return first + out.join('/') + last;
     },
     basename: function(p) {
-      p = fcmderUtils.path.removeTrailingSlash(p + '');
+      p = self.path.removeTrailingSlash(p + '');
       var name;
       if ((name = p.match(/[^\/]*$/)) === null) {
         return p;
@@ -105,5 +111,5 @@ var fcmderUtils = {
       }
       return first + '/' + second;
     }
-  }
-};
+  };
+});

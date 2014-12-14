@@ -2,15 +2,15 @@
 
 /* App Module */
 
-var fcmderApp = angular.module('fcmderApp', [
+angular.module('fcmderApp', [
   'ngRoute',
   'ui.bootstrap',
+  'fcmderUtils',
   'fcmderControllers',
   'fcmderListOrderFilters',
   'fcmderListFormatters'
-]);
-
-fcmderApp.config(['$routeProvider',
+])
+.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider
     .when('/folders/', {

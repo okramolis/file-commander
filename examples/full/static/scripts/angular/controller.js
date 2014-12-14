@@ -2,17 +2,17 @@
 
 /* Controllers */
 
-var fcmderControllers = angular.module('fcmderControllers', []);
+angular.module('fcmderControllers', [])
 
 //-----------------------------
 // CONSTANTS
 //-----------------------------
-fcmderControllers.constant('MB', Math.pow(2, 20));
+.constant('MB', Math.pow(2, 20))
 
 //-----------------------------
 // File list item constructor
 //-----------------------------
-fcmderControllers.factory('Item', function() {
+.factory('Item', ['fcmderUtils.service', function(fcmderUtils) {
   function Item(name, stats, path) {
     this.name  = name;
     this.kind  = fcmderUtils.app.meta2kind(stats);
@@ -30,13 +30,13 @@ fcmderControllers.factory('Item', function() {
     this.size  = source.size;
   }
   return Item;
-});
+}])
 
 //-----------------------------
 // Upload service
 //-----------------------------
 // Basic multipart/form-data encoding abstraction.
-fcmderControllers.service('fileUpload', ['$http',
+.service('fileUpload', ['$http',
   function ($http) {
     this.uploadFileToUrl = function(files, uploadUrl){
       var fd = new FormData();
@@ -49,11 +49,11 @@ fcmderControllers.service('fileUpload', ['$http',
       });
     }
   }
-]);
+])
 
 // Passes files from element to scope.
 // Supposed to be used on input[type="file"] element.
-fcmderControllers.directive('fileModel', ['$parse',
+.directive('fileModel', ['$parse',
   function ($parse) {
     return {
       restrict: 'A',
@@ -69,11 +69,11 @@ fcmderControllers.directive('fileModel', ['$parse',
       }
     };
   }
-]);
+])
 
 // Event listener
 // - submit => clear the input file element
-fcmderControllers.directive('fileUploadFormWatch', [
+.directive('fileUploadFormWatch', [
   function () {
     return {
       restrict: 'A',
@@ -85,13 +85,13 @@ fcmderControllers.directive('fileUploadFormWatch', [
       }
     };
   }
-]);
+])
 
 //------------------------
 // Submitted form handlers
 //------------------------
-fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'fileUpload', 'MB',
-  function($scope, $http, Item, fileUpload, MB){
+.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'fileUpload', 'MB', 'fcmderUtils.service',
+  function($scope, $http, Item, fileUpload, MB, fcmderUtils){
     $scope.onSubmit = function(){
       var files = $scope.files2upload;
       if (!files) { return; }
@@ -177,11 +177,11 @@ fcmderControllers.controller('FileUploadCtrl', ['$scope', '$http', 'Item', 'file
       $scope.$emit('action', 'Uploading files: "' + uploading.join('", "') + '" ...', upid, 'success');
     }
   }
-]);
+])
 
-fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
+.controller('FormPostCtrl', ['$scope', '$http', 'Item', 'fcmderUtils.service',
   // Controller is supposed to be called for submitted forms only (this is app's responsibility).
-  function($scope, $http, Item) {
+  function($scope, $http, Item, fcmderUtils) {
     // Set defaults for submitted form.
     $scope.form = {
       attrs : {}
@@ -266,11 +266,11 @@ fcmderControllers.controller('FormPostCtrl', ['$scope', '$http', 'Item',
       .error($scope.handleErrHttp);
     }
   }
-]);
+])
 
-fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
+.controller('FormDeleteCtrl', ['$scope', '$http', 'fcmderUtils.service',
   // Controller is supposed to be called for submitted forms only (this is app's responsibility).
-  function($scope, $http) {
+  function($scope, $http, fcmderUtils) {
     // set defaults for submitted form
     $scope.form = {
       attrs : {
@@ -299,7 +299,7 @@ fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
       .error($scope.handleErrHttp);
     }
   }
-]);
+])
 
 // --------------------------------------
 // Shared controller
@@ -310,7 +310,7 @@ fcmderControllers.controller('FormDeleteCtrl', ['$scope', '$http',
 //   - display
 //   - close
 // - handling http errors
-fcmderControllers.controller('TemplateCtrl', ['$scope',
+.controller('TemplateCtrl', ['$scope',
   function ($scope) {
     $scope.alerts = [];
     $scope.actions = [];
@@ -365,14 +365,14 @@ fcmderControllers.controller('TemplateCtrl', ['$scope',
       $scope.$emit('alert', res.message, 'danger');
     }
   }
-]);
+])
 
 //--------------------------
 // Listing directory content
 //--------------------------
-fcmderControllers.controller('DirectoryCtrl', ['$scope', '$http', '$routeParams', 'Item',
+.controller('DirectoryCtrl', ['$scope', '$http', '$routeParams', 'Item', 'fcmderUtils.service',
   // Controller is supposed to be called for directory urls only (this is app's responsibility).
-  function($scope, $http, $routeParams, Item) {
+  function($scope, $http, $routeParams, Item, fcmderUtils) {
     // Compose request address according to route params.
     var url = fcmderUtils.app.path2url($routeParams.pathname);
     // Send request for current directory content.
@@ -444,14 +444,14 @@ fcmderControllers.controller('DirectoryCtrl', ['$scope', '$http', '$routeParams'
       return getOrderPropName(p1) === getOrderPropName(p2);
     }
   }
-]);
+])
 
 // ---------------------
 // File detail - preview
 // ---------------------
-fcmderControllers.controller('FileCtrl', ['$scope', '$http', '$routeParams',
+.controller('FileCtrl', ['$scope', '$http', '$routeParams', 'fcmderUtils.service',
   // Controller is supposed to be called for file urls only (this is app's responsibility).
-  function($scope, $http, $routeParams) {
+  function($scope, $http, $routeParams, fcmderUtils) {
     // Compose request address according to route params.
     var url = fcmderUtils.app.path2url($routeParams.pathname);
     // Send request for file's details.
@@ -468,14 +468,14 @@ fcmderControllers.controller('FileCtrl', ['$scope', '$http', '$routeParams',
       };
     });
   }
-]);
+])
 
 // ------------------------------
 // Symbolic link detail - preview
 // ------------------------------
-fcmderControllers.controller('LinkCtrl', ['$scope', '$http', '$routeParams',
+.controller('LinkCtrl', ['$scope', '$http', '$routeParams', 'fcmderUtils.service',
   // Controller is supposed to be called for link urls only (this is app's responsibility).
-  function($scope, $http, $routeParams) {
+  function($scope, $http, $routeParams, fcmderUtils) {
     // Compose request address according to route params.
     var url = fcmderUtils.app.path2url($routeParams.pathname);
     // Send request for link's details.
