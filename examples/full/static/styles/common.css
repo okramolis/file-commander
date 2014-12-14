@@ -58,6 +58,10 @@ table {
 #fcmder_local-auth input {
   display: block;
 }
+.fcmder_user-name,
+.fcmder_auth-provider {
+  font-weight: bold;
+}
 
 /* Possibly for all */
 .fcmder_inprogress {
