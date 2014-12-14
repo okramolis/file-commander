@@ -58,6 +58,8 @@ table {
 #fcmder_local-auth input {
   display: block;
 }
+
+/* User's home page */
 .fcmder_user-name,
 .fcmder_auth-provider {
   font-weight: bold;
