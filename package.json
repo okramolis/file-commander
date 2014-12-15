@@ -1,8 +1,12 @@
 {
   "name": "file-commander",
   "description": "File manager for express",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Ondrej Kramolis  <o.kramolis@seznam.cz>",
+  "repository" : {
+    "type": "git",
+    "url" : "http://github.com/okramolis/file-commander.git"
+  },
   "dependencies": {
     "express": "~4.10.0",
     "async": "~0.9.0",
