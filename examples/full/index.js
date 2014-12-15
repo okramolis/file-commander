@@ -195,7 +195,7 @@ app.use(express.static(__dirname + STATIC_PATH, STATIC_SETTINGS));
 app.use(cookieParser());
 app.use(expressSession({
   store: new RedisStore(),
-  secret: 'tralala nana',
+  secret: appConfig.session.secret,
   resave: true,
   saveUninitialized: true
 }));

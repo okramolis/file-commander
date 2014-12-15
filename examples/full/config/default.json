@@ -42,6 +42,9 @@
     "upload": {
       "bytesPerReqLimit": 1048576
     },
+    "session": {
+      "secret": "--add--your--session--secret--"
+    },
     "auth": {
       "strategies": [{
         "name": "local",
