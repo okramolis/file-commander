@@ -455,7 +455,7 @@ function authorizeOwnerMiddleware(req, res, next) {
   }
   // user authenticated
   // get user home directory
-  var mount = __dirname + PRIVATE_PATH + '/' + req.user._id;
+  var mount = __dirname + PRIVATE_PATH + path.sep + req.user._id;
   // check existence of the directory
   fs.exists(mount, function(exists) {
     if (exists) {
