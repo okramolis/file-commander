@@ -60,6 +60,7 @@ var express = require('express')
   , useragent = require('useragent')
   , config = require('config')
   , _ = require('underscore')
+  , redisTest = require('./lib/redis-test')
   , Commander = require('../..').Commander
 ;
 
@@ -97,8 +98,8 @@ var privateApp = new Commander({
   mount       : PRIVATE_APP_URL_MOUNT
 });
 
-// TODO make sure redis server is running
-//      - throw an error if it is not
+// make sure redis server is running and ready
+redisTest.ready(startApp);
 
 // create session store
 var RedisStore = require('connect-redis')(expressSession);
@@ -665,4 +666,8 @@ db.on('open', function() {
   app.listen(PORT);
   console.log('listening on port ' + PORT);
 });
-db.connect();
+
+function startApp() {
+  redisTest.quit();
+  db.connect();
+}
