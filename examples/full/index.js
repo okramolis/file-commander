@@ -1,19 +1,21 @@
-const STATIC_PATH               = '/static'
-  ,   PRIVATE_PATH              = '/homes'
+var path = require('path');
+
+const STATIC_PATH               = path.sep + 'static'
+  ,   PRIVATE_PATH              = path.sep + 'homes'
   ,   PUBLIC_APP_URL_MOUNT      = '/public'
   ,   PRIVATE_APP_URL_MOUNT     = '/files'
   ,   DEFAULT_PORT              = 8888
   ,   STATIC_SETTINGS           = {
         dotfiles: 'allow'
       }
-  ,   VIEWS_PATH                = '/views'
-  ,   HTML5_VIEWS_MOUNT         = 'html5/'
-  ,   HTML4_VIEWS_MOUNT         = 'html4/'
+  ,   VIEWS_PATH                = path.sep + 'views'
+  ,   HTML5_VIEWS_MOUNT         = 'html5' + path.sep
+  ,   HTML4_VIEWS_MOUNT         = 'html4' + path.sep
   ,   PLAIN_APP_URL_MOUNT       = '/plain-app'
-  ,   PLAIN_APP_VIEWS_MOUNT     = 'apps/plain/'
-  ,   MAIN_APP_VIEWS_MOUNT      = 'apps/main/'
-  ,   COMMON_VIEWS_MOUNT        = 'common/'
-  ,   USER_VIEWS_MOUNT          = COMMON_VIEWS_MOUNT + 'user/'
+  ,   PLAIN_APP_VIEWS_MOUNT     = 'apps' + path.sep + 'plain' + path.sep
+  ,   MAIN_APP_VIEWS_MOUNT      = 'apps' + path.sep + 'main' + path.sep
+  ,   COMMON_VIEWS_MOUNT        = 'common' + path.sep
+  ,   USER_VIEWS_MOUNT          = COMMON_VIEWS_MOUNT + 'user' + path.sep
   ,   LOGIN_ROUTE               = '/login'
   ,   LOGOUT_ROUTE              = '/logout'
   ,   HOME_ROUTE                = '/home'
@@ -55,7 +57,6 @@ var express = require('express')
   , cookieParser = require('cookie-parser')
   , expressSession = require('express-session')
   , logger = require('morgan')
-  , path = require('path')
   , fs = require('fs')
   , useragent = require('useragent')
   , config = require('config')
