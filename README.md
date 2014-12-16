@@ -7,6 +7,8 @@ Install
 -------
     $ npm install file-commander
 
+Please not, that it was tested on Mac OS X 10.9 and Linux Ubuntu 12.04 only.
+
 Example
 -------
 Currently there is only full demo application. You may see it running on [file-commander.com](http://file-commander.com).
