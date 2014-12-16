@@ -7,7 +7,10 @@ Install
 -------
     $ npm install file-commander
 
-Please not, that it was tested on Mac OS X 10.9 and Linux Ubuntu 12.04 only.
+Supported platforms
+-------------------
+All platforms supported by Node.js with Linux-like file system path format. MS Windows support will be added soon.
+Please note, that the application was tested on Mac OS X 10.9 and Linux Ubuntu 12.04 only.
 
 Example
 -------
