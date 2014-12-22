@@ -16,7 +16,7 @@
     <table class="fcmder_files-table table-style">
       <tbody>
         <tr class="row">
-          <th ng-click="onOrderClick('name')" class="col-sm-7">
+          <th ng-click="onOrderClick('name')" class="col-sm-6">
             Name <small class="fcmder_order-marker">{{orderMarker.name | marker}}</small>
           </th>
           <th ng-click="onOrderClick('mtime')" class="col-sm-3">
@@ -25,30 +25,30 @@
           <th ng-click="onOrderClick('size')" class="col-sm-1">
             Size <small class="fcmder_order-marker">{{orderMarker.size | marker}}</small>
           </th>
-          <th ng-click="onOrderClick('kind')" class="col-sm-1">
+          <th ng-click="onOrderClick('mime')" class="col-sm-2">
             Kind <small class="fcmder_order-marker">{{orderMarker.kind | marker}}</small>
           </th>
         </tr>
         <tr class="row">
-          <td class="col-sm-7">
+          <td>
             <a href="{{'#' + (parentDir | url)}}">{{parentDir.name}}</a>
           </td>
-          <td class="col-sm-3"></td>
-          <td class="col-sm-1"></td>
-          <td class="col-sm-1"></td>
+          <td></td>
+          <td></td>
+          <td></td>
         </tr>
         <tr class="row" ng-repeat="item in items | filter:query | orderBy:orderProp">
-          <td class="col-sm-7">
+          <td>
             <a href="{{'#' + (item | url)}}">{{item.name}}</a>
           </td>
-          <td class="col-sm-3">
+          <td>
             <span>{{item | mtime}}</span>
           </td>
-          <td class="col-sm-1">
+          <td>
             <span>{{item | size}}</span>
           </td>
-          <td class="col-sm-1">
-            <span>{{item.kind}}</span>
+          <td>
+            <span>{{item | kind}}</span>
           </td>
         </tr>
       </tbody>

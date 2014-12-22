@@ -13,23 +13,41 @@ angular.module('fcmderControllers', [])
 // File list item constructor
 //-----------------------------
 .factory('Item', ['fcmderUtils.service', function(fcmderUtils) {
-  function Item(name, stats, path) {
+  function Item(name, stats, path, mime) {
     this.name  = name;
     this.kind  = fcmderUtils.app.meta2kind(stats);
+    this.mime  = mime;
     this.path  = fcmderUtils.path.normalize(fcmderUtils.path.join(path, name));
-    this.mount = fcmderUtils.app.kind2mount(this.kind);
+    this.mount = fcmderUtils.app.kind2mount(this.kind, this.mime);
     this.mtime = (!stats.mtime) ? null : new Date(stats.mtime);
     this.size  = (this.kind === 'Folder') ? 0 : stats.size;
   }
   Item.prototype.copy = function(source) {
     this.name  = source.name;
     this.kind  = source.kind;
+    this.mime  = source.mime;
     this.path  = source.path;
     this.mount = source.mount;
     this.mtime = source.mtime;
     this.size  = source.size;
   }
+  // returns href for access to the item
+  Item.prototype.getHref = function() {
+    return fcmderUtils.path.join(this.mount, this.path);
+  }
   return Item;
+}])
+
+//-----------------------------
+// File constructor
+//-----------------------------
+.factory('File', ['fcmderUtils.service', 'Item', function(fcmderUtils, Item) {
+  function File(name, stats, path, mime, mounts) {
+    Item.call(this, name, stats, path, mime);
+    this.mount = fcmderUtils.path.normalize(fcmderUtils.path.join(mounts.root, mounts.download));
+  }
+  fcmderUtils.common.inherits(File, Item);
+  return File;
 }])
 
 //-----------------------------
@@ -155,7 +173,7 @@ angular.module('fcmderControllers', [])
           for(var i = 0, len = uploaded.length; i < len; i++) {
             $http.get(uploaded[i])
             .success(function(created) {
-              $scope.items.push(new Item(created.name, created.meta, created.path));
+              $scope.items.push(new Item(created.name, created.meta, created.path, created.mime));
             })
             .error(function(res) {
               console.error('file-commander: http error ...\n' + JSON.stringify(res));
@@ -221,7 +239,7 @@ angular.module('fcmderControllers', [])
           // Fetch the updated item specified by "location" response property to update self.
           $http.get(res.location)
           .success(function(updated) {
-            var item = new Item(updated.name, updated.meta, updated.path);
+            var item = new Item(updated.name, updated.meta, updated.path, updated.mime);
             $scope.item.copy(item);
             item = null;
             if ($scope.form.attrs.hasOwnProperty('name')) {
@@ -253,7 +271,7 @@ angular.module('fcmderControllers', [])
           // Fetch the created item specified by "location" response property to update self.
           $http.get(res.location)
           .success(function(created) {
-            $scope.items.push(new Item(created.name, created.meta, created.path));
+            $scope.items.push(new Item(created.name, created.meta, created.path, created.mime));
           })
           .error(function(res) {
             console.error('file-commander: http error ...\n' + JSON.stringify(res));
@@ -384,8 +402,9 @@ angular.module('fcmderControllers', [])
       var items = [];
       var names = data.children.names;
       var stats = data.children.stats;
+      var mimes = data.children.mimes;
       for (var i = 0, len = names.length; i < len; i++) {
-        items.push(new Item(names[i], stats[names[i]], path));
+        items.push(new Item(names[i], stats[names[i]], path, mimes[names[i]]));
       }
       $scope.items = items;
     });
@@ -449,23 +468,29 @@ angular.module('fcmderControllers', [])
 // ---------------------
 // File detail - preview
 // ---------------------
-.controller('FileCtrl', ['$scope', '$http', '$routeParams', 'fcmderUtils.service',
+.controller('FileCtrl', ['$scope', '$http', '$routeParams', 'fcmderUtils.service', 'File', 'Item', 'fcmderServices.filePreview',
   // Controller is supposed to be called for file urls only (this is app's responsibility).
-  function($scope, $http, $routeParams, fcmderUtils) {
+  function($scope, $http, $routeParams, fcmderUtils, File, Item, filePreview) {
+    // Init scope.
+    $scope.previewSupported = true;
     // Compose request address according to route params.
     var url = fcmderUtils.app.path2url($routeParams.pathname);
     // Send request for file's details.
     $http.get(url).success(function(data) {
       // Format and store the received data.
-      $scope.file = {
-        name: data.name,
-        path: fcmderUtils.path.normalize(
-                fcmderUtils.path.join(
-                  fcmderUtils.path.join(data.mounts.root, data.mounts.download),
-                  fcmderUtils.path.join(data.path, data.name)
-                )
-              )
-      };
+      $scope.file = new File(data.name, data.meta, data.path, data.mime, data.mounts);
+      // Get preview of the file.
+      filePreview.get($scope.file)
+      .then(function(preview) {
+        $scope.previewSupported = true;
+        $scope.preview = (preview === null) ? {} : preview;
+      }, function(err) {
+        if (err.code === 415) {
+          $scope.previewSupported = false;
+          return;
+        }
+        // TODO handle other errors
+      });
     });
   }
 ])

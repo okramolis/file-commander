@@ -30,12 +30,18 @@ angular.module('fcmderListFormatters', [])
     return (Math.round(item.size / 10000000) / 100) + ' GB';
   };
 })
-.filter('url', ['fcmderUtils.service', function(fcmderUtils) {
+.filter('kind', function() {
   return function(item) {
     if (!item) { return; }
-    return fcmderUtils.path.join(item.mount, item.path);
+    return (item.kind === 'File') ? item.mime : item.kind;
   }
-}])
+})
+.filter('url', function() {
+  return function(item) {
+    if (!item) { return; }
+    return item.getHref();
+  }
+})
 .filter('mtime', function() {
   return function(item) {
     if (!item || !(item.mtime instanceof Date)) { return '--'; }

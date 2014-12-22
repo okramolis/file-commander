@@ -6,6 +6,8 @@ angular.module('fcmderApp', [
   'ngRoute',
   'ui.bootstrap',
   'fcmderUtils',
+  'fcmderDirectives',
+  'fcmderServices',
   'fcmderControllers',
   'fcmderListOrderFilters',
   'fcmderListFormatters'
@@ -21,8 +23,16 @@ angular.module('fcmderApp', [
       templateUrl: '/templates/read-write/directory.html',
       controller: 'DirectoryCtrl'
     })
-    .when('/files/:pathname*', {
-      templateUrl: '/templates/read-write/file.html',
+    .when('/files/application/:mimesub/:pathname*', {
+      templateUrl: '/templates/read-write/file/text.html',
+      controller: 'FileCtrl'
+    })
+    .when('/files/text/:mimesub/:pathname*', {
+      templateUrl: '/templates/read-write/file/text.html',
+      controller: 'FileCtrl'
+    })
+    .when('/files/:mimemain/:mimesub/:pathname*', {
+      templateUrl: '/templates/read-write/file/not-supported.html',
       controller: 'FileCtrl'
     })
     .when('/aliases/:pathname*', {

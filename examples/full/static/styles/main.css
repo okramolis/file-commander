@@ -25,3 +25,37 @@ input[type="file"] {
   float: right;
   padding: 1px 0px 1px 4px;
 }
+
+/* Item detail view */
+.fcmder_item-detail .fcmder_sidebar {
+  float: right;
+  padding: 0.5em;
+  margin: 0.5em;
+}
+
+.fcmder_item-detail .fcmder_item-content.fcmder_item-text-code {
+  padding: 0;
+}
+
+/* AngularJS app directives */
+fcmder-file-details > ul > li {
+  padding: 0.2em;
+  margin: 0.2em;
+}
+fcmder-file-details > ul > li > div:first-child {
+  font-weight: bold;
+}
+
+/* CodeMirror override for read-only app */
+pre.fcmder_item-content .CodeMirror {
+  line-height: inherit;
+  position: inherit;
+  background: inherit;
+  color: inherit;
+  font-family: inherit;
+  height: inherit;
+}
+
+pre.fcmder_item-content .CodeMirror-linenumber {
+  min-width: 2.5em;
+}

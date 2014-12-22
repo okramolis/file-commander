@@ -1,0 +1,26 @@
+<div class="container">
+
+  <article class="fcmder_item-detail">
+
+    <header>
+      <h1>{{file.name}}</h1>
+    </header>
+
+    <aside class="fcmder_sidebar">
+      <fcmder-file-details>
+      </fcmder-file-details>
+    </aside>
+
+    <pre
+      class="fcmder_item-content"
+      ng-class="preview.classes"
+      ng-show="previewSupported"
+    ><code>{{preview.text}}</code></pre>
+
+    <fcmder-file-no-preview
+      ng-show="!previewSupported">
+    </fcmder-file-no-preview>
+
+  </article>
+
+</div>

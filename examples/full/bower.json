@@ -1,0 +1,8 @@
+{
+  "name": "file-commander-demo",
+  "description": "File manager application",
+  "private": true,
+  "dependencies": {
+    "codemirror": "~4.8"
+  }
+}

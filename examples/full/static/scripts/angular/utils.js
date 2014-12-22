@@ -6,10 +6,10 @@ angular.module('fcmderUtils', [])
 .service('fcmderUtils.service', function() {
   var self = this;
   this.app = {
-    kind2mount: function(kind) {
+    kind2mount: function(kind, mime) {
       switch(kind) {
         case 'File':
-          kind = 'files';
+          kind = 'files/' + mime;
           break;
         case 'Folder':
           kind = 'folders';
@@ -110,6 +110,20 @@ angular.module('fcmderUtils', [])
         return first + second.slice(1);
       }
       return first + '/' + second;
+    }
+  };
+  this.common = {
+    // TODO add browserified versions
+    inherits: function(ctor, superCtor) {
+      ctor.super_ = superCtor;
+      ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+          value: ctor,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
     }
   };
 });
