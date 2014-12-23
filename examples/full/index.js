@@ -22,8 +22,10 @@ const STATIC_PATH               = path.sep + 'static'
   ,   ROOT_ROUTE                = '/'
   ,   LOGOUT_REDIR_ROUTE        = LOGIN_ROUTE
   ,   NG_APP_NAME               = 'fcmderApp'
-  ,   NG_UPLOAD_BYTES_LIMIT_KEY = 'UPLOAD_BYTES_LIMIT'
-  ,   NG_UPLOAD_TYPES_KEY       = 'UPLOAD_TYPES'
+  ,   NG_UPLOAD_BYTES_LIMIT_KEY = 'FCMDER_UPLOAD_BYTES_LIMIT'
+  ,   NG_UPLOAD_TYPES_KEY       = 'FCMDER_UPLOAD_TYPES'
+  ,   NG_PREVIEW_PLAIN_BYTES_LIMIT_KEY  = 'FCMDER_PREVIEW_PLAIN_BYTES_LIMIT'
+  ,   NG_PREVIEW_CODE_BYTES_LIMIT_KEY   = 'FCMDER_PREVIEW_CODE_BYTES_LIMIT'
   ,   MEGA_BYTE                 = Math.pow(2,20)
   ,   USER_MODEL_NAME           = 'user'
       // TODO read html5 support from external file
@@ -68,6 +70,7 @@ var express = require('express')
 // get configurations
 var appConfig = config.get('app')
   , dbConfig  = config.get('db')
+  , clientConfig  = config.get('client')
 ;
 
 var dbio = require('./lib/dbio/' + dbConfig.type)
@@ -81,6 +84,8 @@ const PORT                = appConfig.net.port
   ,   UPLOAD_TYPES_STR    = appConfig.mimes.join()
   ,   LONG_RUNNING_TASK_MS= appConfig.timers.longRunningTask
   ,   MSG_PAGE_TIMEOUT_S  = appConfig.timers.msgPageTimeout
+  ,   NG_PREVIEW_PLAIN_BYTES_LIMIT = clientConfig.preview.limits.textPlainBytes
+  ,   NG_PREVIEW_CODE_BYTES_LIMIT  = clientConfig.preview.limits.syntaxHlBytes
 ;
 
 // get app
@@ -372,7 +377,9 @@ function renderMainAppMiddleware(req, res, next) {
   var attrs = res.locals.appkey.root.attrs;
   attrs["ng-app"] = NG_APP_NAME;
   attrs["ng-init"] = NG_UPLOAD_BYTES_LIMIT_KEY + '=' + UPLOAD_BYTES_LIMIT + ';' +
-                     NG_UPLOAD_TYPES_KEY + '=' + '\'' + UPLOAD_TYPES_STR + '\'';
+                     NG_UPLOAD_TYPES_KEY + '=' + '\'' + UPLOAD_TYPES_STR + '\';' +
+                     NG_PREVIEW_PLAIN_BYTES_LIMIT_KEY + '=' + NG_PREVIEW_PLAIN_BYTES_LIMIT + ';' +
+                     NG_PREVIEW_CODE_BYTES_LIMIT_KEY  + '=' + NG_PREVIEW_CODE_BYTES_LIMIT  + ';';
   simpleRenderer(req, res, next);
 }
 

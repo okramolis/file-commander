@@ -27,3 +27,14 @@ angular.module('fcmderDirectives', [])
   }
 ])
 
+// File too big to preview
+// - message instead of file preview
+.directive('fcmderFileToobigPreview', [
+  function () {
+    return {
+      restrict: 'E',
+      templateUrl: '/templates/common/file-toobig-preview.html'
+    };
+  }
+])
+

@@ -16,7 +16,7 @@
     <li>
       <div>Upload files to current folder</div>
       <form ng-controller="FileUploadCtrl" ng-submit="onSubmit()" file-upload-form-watch>
-        <input type="file" name="upload" multiple="multiple" accept={{UPLOAD_TYPES}} file-model="files2upload"/>
+        <input type="file" name="upload" multiple="multiple" accept={{FCMDER_UPLOAD_TYPES}} file-model="files2upload"/>
         <button type="submit">Upload</button>
       </form>
     </li>

@@ -117,7 +117,7 @@ angular.module('fcmderControllers', [])
         , ignored  = {
             size: []
           }
-        , limit = $scope.UPLOAD_BYTES_LIMIT
+        , limit = $scope.FCMDER_UPLOAD_BYTES_LIMIT
         , uploading = []
           // TODO implement some method for this purpose
         , upid = ('' + Math.random()).slice(2)
@@ -480,11 +480,18 @@ angular.module('fcmderControllers', [])
       // Format and store the received data.
       $scope.file = new File(data.name, data.meta, data.path, data.mime, data.mounts);
       // Get preview of the file.
-      filePreview.get($scope.file)
+      filePreview.get($scope.file, {
+        textPlainBytesLimit : $scope.FCMDER_PREVIEW_PLAIN_BYTES_LIMIT,
+        syntaxHlBytesLimit  : $scope.FCMDER_PREVIEW_CODE_BYTES_LIMIT
+      })
       .then(function(preview) {
-        $scope.previewSupported = true;
         $scope.preview = (preview === null) ? {} : preview;
       }, function(err) {
+        if (err.code === 413) {
+          $scope.previewSupported = false;
+          $scope.previewTooBig = true;
+          return;
+        }
         if (err.code === 415) {
           $scope.previewSupported = false;
           return;

@@ -9,25 +9,44 @@ angular.module('fcmderServices', [])
 .service('fcmderServices.filePreview', ['$q', '$http', 'File',
   function($q, $http, File) {
     if (typeof CodeMirror !== 'undefined') {
+      // TODO make this an angular constant
       CodeMirror.modeURL = "/bower_components/codemirror/mode/%N/%N.js";
     }
 
     // Promises file preview.
-    this.get = function(file) {
+    this.get = function(file, config) {
       if (!(file instanceof File)) {
         throw new Error('file-commander.fcmderServices.filePreview Error: ' +
                         'file must be instance of File but is "' +
                         (typeof file) + '"');
       }
+      config = config || {};
 
-      if (this._hasSyntaxSupport(file.mime)) {
+      var HAS_SYNTAX_SUPPORT = this._hasSyntaxSupport(file.mime)
+        , MAY_BE_HIGHLIGHTED = HAS_SYNTAX_SUPPORT &&
+                               file.size <= config.syntaxHlBytesLimit
+      ;
+
+      if (MAY_BE_HIGHLIGHTED) {
         // CODE with SYNTAX highlight support
         // Return promise for supported source file content.
         return $q(this._promisedContent.bind(this, file, {}, this._onCodeContent));
-      } else if (/^text\//.test(file.mime)) {
+      }
+
+      var IS_TEXT = HAS_SYNTAX_SUPPORT || /^text\//.test(file.mime)
+        , MAY_BE_LOADED_TEXT = file.size <= config.textPlainBytesLimit
+      ;
+
+      if (IS_TEXT && MAY_BE_LOADED_TEXT) {
         // TEXT/PLAIN
         // Return promise for text file content.
         return $q(this._promisedContent.bind(this, file, {}, this._onPlainContent));
+      }
+      if (IS_TEXT && !MAY_BE_LOADED_TEXT) {
+        // too big for TEXT/PLAIN
+        return $q(function(resolve, reject) {
+          reject({code: 413});
+        });
       }
 
       // OTHERWISE
@@ -60,6 +79,7 @@ angular.module('fcmderServices', [])
         this._hlSyntax(data, elemParent, file.mime, true);
       }
       resolve({
+        // TODO make this an angular constant
         classes: 'fcmder_item-text-code'
       });
     }
@@ -68,6 +88,7 @@ angular.module('fcmderServices', [])
     this._onPlainContent = function(file, resolve, data) {
       resolve({
         text: data,
+        // TODO make this an angular constant
         classes: 'fcmder_item-text-plain'
       });
     }

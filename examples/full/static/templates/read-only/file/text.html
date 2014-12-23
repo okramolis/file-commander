@@ -18,8 +18,12 @@
     ><code>{{preview.text}}</code></pre>
 
     <fcmder-file-no-preview
-      ng-show="!previewSupported">
+      ng-show="!previewSupported && !previewTooBig">
     </fcmder-file-no-preview>
+
+    <fcmder-file-toobig-preview
+      ng-show="!previewSupported && previewTooBig">
+    </fcmder-file-toobig-preview>
 
   </article>
 

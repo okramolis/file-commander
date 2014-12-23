@@ -59,5 +59,13 @@
         }
       }]
     }
+  },
+  "client": {
+    "preview": {
+      "limits": {
+        "textPlainBytes": 1048576,
+        "syntaxHlBytes": 262144
+      }
+    }
   }
 }
