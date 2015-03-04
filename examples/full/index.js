@@ -354,7 +354,7 @@ app.route(PUBLIC_APP_ROUTE_EXP)
 // renders app home page
 function renderRootMiddleware(req, res, next) {
   simpleRenderer(req, res, next);
-} // END of renderHomeMiddleware
+} // END of renderRootMiddleware
 
 // renders user home page
 function renderHomeMiddleware(req, res, next) {
@@ -469,7 +469,7 @@ function authorizeOwnerMiddleware(req, res, next) {
     if (exists) {
       // the directory exists
       // ... set user home directory
-      Commander.setRequestUserHome(req, mount);
+      Commander.setRequestPrivateDir(req, mount);
       // ... proceed with next middleware
       next();
       return;
@@ -487,7 +487,7 @@ function authorizeOwnerMiddleware(req, res, next) {
       // the directory successfully created
       console.log('Home directory created for user: "%s".', req.user._id);
       // ... set user home directory
-      Commander.setRequestUserHome(req, mount);
+      Commander.setRequestPrivateDir(req, mount);
       // ... finally proceed with next middleware
       next();
     });
