@@ -1,0 +1,26 @@
+mixin item(iname, mount, stats)
+  tr
+    td: a(href=mount + iname)= iname
+    td: span= stats.mtime
+    td: span= appkey.fn.meta2size(stats)
+    td: span= appkey.fn.meta2kind(stats)
+
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    link(rel="stylesheet" type="text/css" href="/styles/common.css")
+  body
+    table.fcmder_files-table
+      tr
+        th Name
+        th Date modified
+        th Size
+        th Kind
+      tr
+        td: a(href=appkey.app.parentPath) #{(appkey.app.parentPath == appkey.app.path) ? '.' : '..'}
+        td
+        td
+        td
+      each file in appkey.app.files.names
+        +item(file, appkey.req.path, appkey.app.files.stats[file])

@@ -1,0 +1,60 @@
+mixin item(iname, path, mount, stats)
+  tr
+    td: a(href=mount + iname)= iname
+    td: span= stats.mtime
+    td: span= appkey.fn.meta2size(stats)
+    td: span= appkey.fn.meta2kind(stats)
+    td
+      ul
+        li
+          form(action=mount method="post")
+            input(type="text" name="name" value=iname)
+            input(type="hidden" name="local" value=path + iname)
+            button(type="submit") Rename
+        li
+          form(action=mount + iname method="post")
+            label
+              input(type="checkbox" name="force")
+              | force removal 
+            button(type="submit" name="_method" value="delete") Delete
+
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    link(rel="stylesheet" type="text/css" href="/styles/common.css")
+    link(rel="stylesheet" type="text/css" href="/styles/plain.css")
+  body
+    ul.fcmder_cdir-commands
+      li
+        div Upload files to current folder
+        form(action=appkey.req.path enctype="multipart/form-data" method="post")
+          input(type="file" name="upload" multiple="multiple")
+          button(type="submit") Upload
+      li
+        div Create a new folder in current folder
+        form(action=appkey.req.path method="post")
+          input(type="text" name="name" placeholder="Folder name")
+          button(type="submit") Create
+      li
+        div Copy or move selected elements to current folder
+        form(action=appkey.req.path method="post")
+          input(type="text" name="local" placeholder="Source path" required)
+          input(type="text" name="name" placeholder="New name")
+          button(type="submit") Move
+          button(type="submit" name="preserve" value="preserve") Copy
+    table.fcmder_files-table
+      tr
+        th Name
+        th Date modified
+        th Size
+        th Kind
+        th Actions
+      tr
+        td: a(href=appkey.app.parentPath) #{(appkey.app.parentPath == appkey.app.path) ? '.' : '..'}
+        td
+        td
+        td
+        td
+      each file in appkey.app.files.names
+        +item(file, appkey.app.path, appkey.req.path, appkey.app.files.stats[file])

@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    link(rel="stylesheet" type="text/css" href="/styles/common.css")
+    link(rel="stylesheet" type="text/css" href="/styles/plain.css")
+  body
+    .container
+      #fcmder_server-msg(class="#{(appkey.app.state.err) ? 'fcmder_failure' : 'fcmder_success'}")
+        .fcmder_message= appkey.app.state.msg
+        if (appkey.app.state.err && appkey.app.state.desc)
+          .fcmder_description
+            p Detailed description:
+            p= appkey.app.state.desc
+        .fcmder_suggestion
+          p Please use this 
+            a(href=appkey.app.redirect) link
+            |  to go back.
