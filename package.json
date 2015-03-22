@@ -1,7 +1,7 @@
 {
   "name": "file-commander",
   "description": "File manager for express",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": "Ondrej Kramolis  <o.kramolis@seznam.cz>",
   "repository" : {
     "type": "git",
