@@ -8,6 +8,7 @@
     "url" : "http://github.com/okramolis/file-commander.git"
   },
   "scripts": {
+    "pretest": "node ./scripts/pretest.js",
     "test": "./node_modules/.bin/mocha --recursive"
   },
   "license": "MIT",
